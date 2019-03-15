@@ -5,15 +5,18 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import java.util.Optional;
+import org.json.simple.JSONObject;
 
 public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   private CombinedTypeSolver mSolver;
@@ -27,76 +30,73 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   }
 
   private static void outputSource(final Node n, final SimpleName name, final String scope) {
-    System.out.print("{\"loc\":\"");
-    System.out.print(
+    JSONObject obj = new JSONObject();
+    obj.put(
+        "loc",
         name.getBegin().get().line
             + ":"
             + name.getBegin().get().column
             + "-"
             + (name.getBegin().get().column + name.getIdentifier().length()));
-    System.out.print("\",");
-    System.out.print("\"source\":1,");
+    obj.put("source", 1);
     if (n instanceof ClassOrInterfaceDeclaration) {
-      System.out.print("\"syntax\":\"def,prop\",");
-      System.out.print("\"pretty\":\"type " + scope + name.getIdentifier() + "\",");
+      obj.put("syntax", "def");
+      if (((ClassOrInterfaceDeclaration)n).isInterface()) {
+        obj.put("pretty", "interface " + scope + name.getIdentifier());
+      } else {
+        obj.put("pretty", "class " + scope + name.getIdentifier());
+      }
     } else if (n instanceof ClassOrInterfaceType) {
-      System.out.print("\"syntax\":\"use,prop\",");
-      System.out.print("\"pretty\":\"type " + name.getIdentifier() + "\",");
+      obj.put("syntax", "use");
+      obj.put("pretty", "class " + scope + name.getIdentifier());
     } else if (n instanceof VariableDeclarator) {
-      System.out.print("\"syntax\":\"def,prop\",");
-      System.out.print("\"pretty\":\"local " + name.getIdentifier() + "\",");
-    } else if (n instanceof Parameter) {
-      System.out.print("\"syntax\":\"def,prop\",");
-      System.out.print("\"pretty\":\"local " + name.getIdentifier() + "\",");
+      obj.put("syntax", "def");
+      obj.put("pretty", "field " + scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
-      System.out.print("\"syntax\":\"decl\",");
-      System.out.print("\"pretty\":\"function " + name.getIdentifier() + "\",");
+      obj.put("syntax", "decl");
+      obj.put("pretty", "method " + scope + name.getIdentifier());
     } else if (n instanceof MethodCallExpr) {
-      System.out.print("\"syntax\":\"use,prop\",");
-      System.out.print("\"pretty\":\"function " + name.getIdentifier() + "\",");
-    } else if (n instanceof NameExpr) {
-      System.out.print("\"syntax\":\"use,prop\",");
-      System.out.print("\"pretty\":\"property " + name.getIdentifier() + "\",");
+      obj.put("syntax", "use");
+      obj.put("pretty", "method " + scope + name.getIdentifier());
+    } else {
+      obj.put("syntax", "use");
+      obj.put("pretty", "property " + name.getIdentifier());
     }
-    System.out.print("\"sym\":\"" + scope + name.getIdentifier() + "\"");
-    System.out.println("},");
+    obj.put("sym", scope + name.getIdentifier());
+    System.out.println(obj);
   }
 
-  private void outputTarget(final Node n, final SimpleName name) {
+  private static void outputTarget(final Node n, final SimpleName name) {
     outputTarget(n, name, "");
   }
 
-  private void outputTarget(final Node n, final SimpleName name, final String scope) {
-    System.out.print("{\"loc\":\"");
-    System.out.print(name.getBegin().get().line + ":" + name.getBegin().get().column);
-    System.out.print("\",");
-    System.out.print("\"target\":1,");
+  private static void outputTarget(final Node n, final SimpleName name, final String scope) {
+    JSONObject obj = new JSONObject();
+    obj.put("loc", name.getBegin().get().line + ":" + name.getBegin().get().column);
+    obj.put("target", 1);
 
     if (n instanceof ClassOrInterfaceDeclaration) {
-      System.out.print("\"kind\":\"decl\",");
-      System.out.print("\"pretty\":\"type " + scope + name.getIdentifier() + "\",");
+      obj.put("kind", "decl");
+      obj.put("pretty", "class " + scope + name.getIdentifier());
     } else if (n instanceof ClassOrInterfaceType) {
-      System.out.print("\"kind\":\"use\",");
-      System.out.print("\"pretty\":\"type " + name.getIdentifier() + "\",");
-    } else if (n instanceof Parameter) {
-      System.out.print("\"kind\":\"def\",");
-      System.out.print("\"pretty\":\"local " + name.getIdentifier() + "\",");
+      obj.put("kind", "use");
+      obj.put("pretty", "class " + scope + name.getIdentifier());
     } else if (n instanceof VariableDeclarator) {
-      System.out.print("\"kind\":\"def\",");
-      System.out.print("\"pretty\":\"local " + name.getIdentifier() + "\",");
+      obj.put("kind", "def");
+      obj.put("pretty", "field " + scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
-      System.out.print("\"kind\":\"decl\",");
-      System.out.print("\"pretty\":\"function " + name.getIdentifier() + "\",");
+      obj.put("kind", "decl");
+      obj.put("pretty", "method " + scope + name.getIdentifier());
     } else if (n instanceof MethodCallExpr) {
-      System.out.print("\"kind\":\"use\",");
-      System.out.print("\"pretty\":\"function " + name.getIdentifier() + "\",");
-    } else if (n instanceof NameExpr) {
-      System.out.print("\"kind\":\"use\",");
-      System.out.print("\"pretty\":\"property " + name.getIdentifier() + "\",");
+      obj.put("kind", "use");
+      obj.put("pretty", "method " + scope + name.getIdentifier());
+    } else {
+      obj.put("kind", "use");
+      obj.put("pretty", "property " + name.getIdentifier());
     }
 
-    System.out.print("\"sym\":\"" + scope + name.getIdentifier() + "\"");
-    System.out.println("},");
+    obj.put("sym", scope + name.getIdentifier());
+    System.out.println(obj);
   }
 
   @Override
@@ -128,6 +128,10 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope);
+    if (scope != "") {
+      outputSource(n, n.getName());
+      outputTarget(n, n.getName());
+    }
     super.visit(n, a);
   }
 
@@ -143,10 +147,11 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope);
-    for (Parameter param : n.getParameters()) {
-      // outputSource(param, param.getName());
-      // outputTarget(param, param.getName());
+    if (scope != "") {
+      outputSource(n, n.getName());
+      outputTarget(n, n.getName());
     }
+    // XXX Use JavaParserFacade.get(mSolver).getType(param) to get type
     super.visit(n, a);
   }
 
@@ -162,13 +167,6 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope);
 
-    super.visit(n, a);
-  }
-
-  @Override
-  public void visit(NameExpr n, String a) {
-    // outputSource(n, n.getName());
-    // outputTarget(n, n.getName());
     super.visit(n, a);
   }
 }
