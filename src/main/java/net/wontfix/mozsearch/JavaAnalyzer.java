@@ -37,7 +37,7 @@ public class JavaAnalyzer {
         File directory = file;
         int pos = 0;
         while (pos >= 0) {
-          directory = file.getParentFile();;
+          directory = directory.getParentFile();
           solver.add(new JavaParserTypeSolver(directory));
           pos = t.indexOf('.');
           t = t.substring(pos + 1);
