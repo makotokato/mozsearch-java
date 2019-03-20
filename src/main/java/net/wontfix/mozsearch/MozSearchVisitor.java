@@ -3,33 +3,50 @@ package net.wontfix.mozsearch;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Optional;
 import org.json.simple.JSONObject;
 
 public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   private CombinedTypeSolver mSolver;
+  private String mOutputPath;
 
-  public MozSearchVisitor(CombinedTypeSolver aSolver) {
+  public MozSearchVisitor(CombinedTypeSolver aSolver, final String output) {
     mSolver = aSolver;
+    mOutputPath = output;
   }
 
-  private static void outputSource(final Node n, final SimpleName name) {
+  private void outputJSON(JSONObject obj) {
+    try {
+      File file = new File(mOutputPath);
+      if (!file.getParentFile().exists()) {
+        file.getParentFile().mkdirs();
+      }
+      PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+      printWriter.println(obj);
+      printWriter.close();
+    } catch (IOException exception) {
+      System.err.println(exception);
+    }
+  }
+
+  private void outputSource(final Node n, final SimpleName name) {
     outputSource(n, name, "");
   }
 
-  private static void outputSource(final Node n, final SimpleName name, final String scope) {
+  private void outputSource(final Node n, final SimpleName name, final String scope) {
     JSONObject obj = new JSONObject();
     obj.put(
         "loc",
@@ -41,7 +58,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     obj.put("source", 1);
     if (n instanceof ClassOrInterfaceDeclaration) {
       obj.put("syntax", "def");
-      if (((ClassOrInterfaceDeclaration)n).isInterface()) {
+      if (((ClassOrInterfaceDeclaration) n).isInterface()) {
         obj.put("pretty", "interface " + scope + name.getIdentifier());
       } else {
         obj.put("pretty", "class " + scope + name.getIdentifier());
@@ -63,14 +80,15 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
       obj.put("pretty", "property " + name.getIdentifier());
     }
     obj.put("sym", scope + name.getIdentifier());
-    System.out.println(obj);
+
+    outputJSON(obj);
   }
 
-  private static void outputTarget(final Node n, final SimpleName name) {
+  private void outputTarget(final Node n, final SimpleName name) {
     outputTarget(n, name, "");
   }
 
-  private static void outputTarget(final Node n, final SimpleName name, final String scope) {
+  private void outputTarget(final Node n, final SimpleName name, final String scope) {
     JSONObject obj = new JSONObject();
     obj.put("loc", name.getBegin().get().line + ":" + name.getBegin().get().column);
     obj.put("target", 1);
@@ -96,7 +114,8 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
 
     obj.put("sym", scope + name.getIdentifier());
-    System.out.println(obj);
+
+    outputJSON(obj);
   }
 
   @Override
@@ -128,10 +147,6 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope);
-    if (scope != "") {
-      outputSource(n, n.getName());
-      outputTarget(n, n.getName());
-    }
     super.visit(n, a);
   }
 
@@ -147,10 +162,6 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope);
-    if (scope != "") {
-      outputSource(n, n.getName());
-      outputTarget(n, n.getName());
-    }
     // XXX Use JavaParserFacade.get(mSolver).getType(param) to get type
     super.visit(n, a);
   }
