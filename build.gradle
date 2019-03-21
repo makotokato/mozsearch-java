@@ -1,0 +1,30 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.github.javaparser:javaparser-symbol-solver-core:3.13.3'
+    compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    testCompile 'junit:junit:3.8.1'
+}
+
+group = 'net.wontfix.mozsearch'
+version = '0.1'
+description = 'mozsearch-java'
+sourceCompatibility = '1.8'
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'net.wontfix.mozsearch.JavaAnalyzer'
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
