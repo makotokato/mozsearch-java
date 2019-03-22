@@ -22,7 +22,8 @@ public class JavaAnalyzer {
     lookingAllChildren(new File(args[0]), args[1], paths.getPackageRoots());
   }
 
-  private static void lookingAllChildren(final File directory, final String outputDirectory, final List<String> roots) {
+  private static void lookingAllChildren(
+      final File directory, final String outputDirectory, final List<String> roots) {
     for (File file : directory.listFiles()) {
       if (file.isDirectory()) {
         lookingAllChildren(file, outputDirectory + "/" + file.getName(), roots);
@@ -36,13 +37,13 @@ public class JavaAnalyzer {
     }
   }
 
-  private static void makeIndex(final File file, final String outputDirectory, final List<String> roots)
-      throws IOException {
+  private static void makeIndex(
+      final File file, final String outputDirectory, final List<String> roots) throws IOException {
     CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
     solver.add(new JavaParserTypeSolver(file.getParent()));
     // Set Android SDK's JAR
-    //solver.add(new JarTypeSolver(""));
+    // solver.add(new JarTypeSolver(""));
 
     CompilationUnit unit = StaticJavaParser.parse(file.toPath());
 
