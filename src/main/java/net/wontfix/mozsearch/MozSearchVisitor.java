@@ -26,6 +26,10 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   public MozSearchVisitor(CombinedTypeSolver aSolver, final String output) {
     mSolver = aSolver;
     mOutputPath = output;
+    File file = new File(mOutputPath);
+    if (file.getParentFile().exists()) {
+      file.delete();
+    }
   }
 
   private void outputJSON(JSONObject obj) {
@@ -52,34 +56,35 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
         "loc",
         name.getBegin().get().line
             + ":"
-            + name.getBegin().get().column
+            + (name.getBegin().get().column - 1)
             + "-"
-            + (name.getBegin().get().column + name.getIdentifier().length()));
+            + (name.getBegin().get().column - 1 + name.getIdentifier().length()));
     obj.put("source", 1);
     if (n instanceof ClassOrInterfaceDeclaration) {
-      obj.put("syntax", "def");
+      obj.put("syntax", "def,type");
       if (((ClassOrInterfaceDeclaration) n).isInterface()) {
         obj.put("pretty", "interface " + scope + name.getIdentifier());
       } else {
         obj.put("pretty", "class " + scope + name.getIdentifier());
       }
     } else if (n instanceof ClassOrInterfaceType) {
-      obj.put("syntax", "use");
+      obj.put("syntax", "type,use");
       obj.put("pretty", "class " + scope + name.getIdentifier());
     } else if (n instanceof VariableDeclarator) {
       obj.put("syntax", "def");
-      obj.put("pretty", "field " + scope + name.getIdentifier());
+      obj.put("pretty", "variable " + scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
-      obj.put("syntax", "decl");
+      obj.put("syntax", "def,function");
       obj.put("pretty", "method " + scope + name.getIdentifier());
     } else if (n instanceof MethodCallExpr) {
-      obj.put("syntax", "use");
+      obj.put("syntax", "use,function");
       obj.put("pretty", "method " + scope + name.getIdentifier());
     } else {
       obj.put("syntax", "use");
-      obj.put("pretty", "property " + name.getIdentifier());
+      obj.put("pretty", "variable " + name.getIdentifier());
     }
-    obj.put("sym", scope + name.getIdentifier());
+    String fullName = scope + name.getIdentifier();
+    obj.put("sym", fullName.replace('.', '#'));
 
     outputJSON(obj);
   }
@@ -90,30 +95,30 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
 
   private void outputTarget(final Node n, final SimpleName name, final String scope) {
     JSONObject obj = new JSONObject();
-    obj.put("loc", name.getBegin().get().line + ":" + name.getBegin().get().column);
+    obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1));
     obj.put("target", 1);
 
     if (n instanceof ClassOrInterfaceDeclaration) {
-      obj.put("kind", "decl");
-      obj.put("pretty", "class " + scope + name.getIdentifier());
+      obj.put("kind", "def");
+      obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof ClassOrInterfaceType) {
       obj.put("kind", "use");
-      obj.put("pretty", "class " + scope + name.getIdentifier());
+      obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof VariableDeclarator) {
       obj.put("kind", "def");
-      obj.put("pretty", "field " + scope + name.getIdentifier());
+      obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
-      obj.put("kind", "decl");
-      obj.put("pretty", "method " + scope + name.getIdentifier());
+      obj.put("kind", "def");
+      obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof MethodCallExpr) {
       obj.put("kind", "use");
-      obj.put("pretty", "method " + scope + name.getIdentifier());
+      obj.put("pretty", scope + name.getIdentifier());
     } else {
       obj.put("kind", "use");
-      obj.put("pretty", "property " + name.getIdentifier());
+      obj.put("pretty", name.getIdentifier());
     }
-
-    obj.put("sym", scope + name.getIdentifier());
+    String fullName = scope + name.getIdentifier();
+    obj.put("sym", fullName.replace('.', '#'));
 
     outputJSON(obj);
   }
