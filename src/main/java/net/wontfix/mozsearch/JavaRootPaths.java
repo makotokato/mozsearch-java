@@ -7,6 +7,9 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +17,7 @@ import java.util.Optional;
 public class JavaRootPaths {
   private ArrayList<String> mRoots;
 
-  public JavaRootPaths(final File aRoot) {
+  public JavaRootPaths(final Path aRoot) {
     mRoots = new ArrayList<String>();
     generateSourceRoot(aRoot);
   }
@@ -23,27 +26,30 @@ public class JavaRootPaths {
     return mRoots;
   }
 
-  private void generateSourceRoot(final File root) {
-    for (File file : root.listFiles()) {
-      if (file.isDirectory()) {
-        generateSourceRoot(file);
-      } else if (file.isFile() && file.getName().endsWith(".java")) {
-        String path = getJavaSourceRoot(file);
-        if (path.length() > 0 && !mRoots.contains(path)) {
-          mRoots.add(path);
+  private void generateSourceRoot(final Path root) {
+    try {
+      for (Path path : Files.newDirectoryStream(root)) {
+        if (Files.isDirectory(path)) {
+          generateSourceRoot(path);
+        } else if (path.toString().endsWith(".java")) {
+          final String pathStr = getJavaSourceRoot(path);
+          if (pathStr != null && !mRoots.contains(pathStr)) {
+            mRoots.add(pathStr);
+          }
         }
       }
+    } catch (IOException e) {
     }
   }
 
-  private static String getJavaSourceRoot(final File file) {
+  private static String getJavaSourceRoot(final Path javaPath) {
     CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
 
     String packagename = "";
 
     try {
-      CompilationUnit unit = StaticJavaParser.parse(file.toPath());
+      CompilationUnit unit = StaticJavaParser.parse(javaPath);
       Optional<PackageDeclaration> p = unit.getPackageDeclaration();
       if (p.isPresent()) {
         packagename = p.get().getName().toString();
@@ -52,12 +58,12 @@ public class JavaRootPaths {
     }
 
     if (packagename.length() == 0) {
-      return "";
+      return null;
     }
 
     // Find package root
     String t = packagename;
-    File directory = file.getParentFile();
+    File directory = javaPath.toFile().getParentFile();
     int pos = 0;
     while (true) {
       pos = t.lastIndexOf('.');
@@ -65,7 +71,7 @@ public class JavaRootPaths {
         break;
       }
       if (!t.substring(t.lastIndexOf('.') + 1).equals(directory.getName())) {
-        return "";
+        return null;
       }
       t = t.substring(0, pos);
 

@@ -113,7 +113,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
       obj.put("kind", "def");
       obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof ConstructorDeclaration) {
-      obj.put("syntax", "def");
+      obj.put("kind", "def");
       obj.put("pretty", scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
       obj.put("kind", "def");

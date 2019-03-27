@@ -12,6 +12,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ public class JavaAnalyzer {
     System.out.println("Searching java sources to look for root path...");
     final File sourceDir = new File(args[0]);
     final File outputDir = new File(args[1]);
-    final JavaRootPaths paths = new JavaRootPaths(sourceDir);
+    final JavaRootPaths paths = new JavaRootPaths(Paths.get(args[0]));
 
     System.out.println("Generating references ...");
     final List<String> rootPaths = paths.getPackageRoots();
