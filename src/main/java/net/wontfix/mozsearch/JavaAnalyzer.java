@@ -87,12 +87,12 @@ public class JavaAnalyzer {
     String packagename = "";
     Optional<PackageDeclaration> p = unit.getPackageDeclaration();
     if (p.isPresent()) {
-      packagename = p.get().getName().toString();
+      packagename = p.get().getName().toString() + ".";
     }
 
     System.out.print("Processing " + file.toPath().toString() + " ");
     MozSearchVisitor visitor = new MozSearchVisitor(outputDirectory + "/" + file.getName());
-    unit.accept(visitor, packagename + ".");
+    unit.accept(visitor, packagename);
     System.out.println("Done");
   }
 }
