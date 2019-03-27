@@ -19,30 +19,32 @@ import java.util.Optional;
 public class JavaAnalyzer {
   public static void main(String[] args) {
     System.out.println("Searching java sources to look for root path...");
-    JavaRootPaths paths = new JavaRootPaths(new File(args[0]));
+    final File sourceDir = new File(args[0]);
+    final File outputDir = new File(args[1]);
+    final JavaRootPaths paths = new JavaRootPaths(sourceDir);
 
     System.out.println("Generating references ...");
     final List<String> rootPaths = paths.getPackageRoots();
     final String[] rootPathString = rootPaths.toArray(new String[rootPaths.size()]);
     for (String path : rootPathString) {
-      lookingAllChildren(new File(path), args[1], rootPaths);
+      lookingAllChildren(new File(path), sourceDir, outputDir, rootPaths);
     }
   }
 
   private static void lookingAllChildren(
-      final File directory, final String outputDirectory, final List<String> roots) {
+      final File currentDir, final File srcDir, final File outputDir, final List<String> roots) {
     ArrayList<File> javaFiles = new ArrayList<File>();
-    for (File file : directory.listFiles()) {
+    for (File file : currentDir.listFiles()) {
       if (file.isDirectory()) {
-        lookingAllChildren(file, outputDirectory + "/" + file.getName(), roots);
+        lookingAllChildren(file, srcDir, outputDir, roots);
       } else if (file.isFile() && file.getName().endsWith(".java")) {
         javaFiles.add(file);
       }
     }
-    makeIndexes(javaFiles, outputDirectory, roots);
+    makeIndexes(javaFiles, srcDir, outputDir, roots);
   }
 
-  private static void makeIndexes(final List<File> files, final String outputDirectory, final List<String> roots) {
+  private static void makeIndexes(final List<File> files, final File srcDir, final File outputDir, final List<String> roots) {
     if (files.isEmpty()) {
       return;
     }
@@ -67,8 +69,8 @@ public class JavaAnalyzer {
 
     for (File file : files) {
       try {
-        makeIndex(file, outputDirectory);
-      } catch (IOException exception) {
+        makeIndex(file, outputDir.toString() + "/./" + file.toString().substring(srcDir.toString().length() + 1));
+      } catch (Exception exception) {
         System.err.println(exception);
       }
     }
@@ -91,7 +93,7 @@ public class JavaAnalyzer {
     }
 
     System.out.print("Processing " + file.toPath().toString() + " ");
-    MozSearchVisitor visitor = new MozSearchVisitor(outputDirectory + "/" + file.getName());
+    MozSearchVisitor visitor = new MozSearchVisitor(outputDirectory);
     unit.accept(visitor, packagename);
     System.out.println("Done");
   }
