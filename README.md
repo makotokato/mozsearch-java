@@ -8,7 +8,7 @@ java -jar mozsearch-java-all.jar <source code path> <output JSON path>
 ## Build
 ```
 ./gradlew build
-./gradlew farJar
+./gradlew fatJar
 ```
 
 ## Additional Information
