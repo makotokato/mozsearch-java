@@ -1,6 +1,7 @@
 package net.wontfix.mozsearch;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -23,8 +24,8 @@ public class JavaRootPathsTest extends TestCase {
   }
 
   public void testRootPaths() {
-    JavaRootPaths rootPaths = new JavaRootPaths(new File("."));
+    JavaRootPaths rootPaths = new JavaRootPaths(Paths.get("."));
     List<String> paths = rootPaths.getPackageRoots();
-    assertEquals(new File(paths.get(0)), new File("./src/main/java"));
+    assertEquals(Paths.get(paths.get(0)), Paths.get("./src/main/java"));
   }
 }

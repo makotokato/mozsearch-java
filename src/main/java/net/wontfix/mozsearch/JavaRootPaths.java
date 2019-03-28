@@ -7,9 +7,8 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,9 +31,9 @@ public class JavaRootPaths {
         if (Files.isDirectory(path)) {
           generateSourceRoot(path);
         } else if (path.toString().endsWith(".java")) {
-          final String pathStr = getJavaSourceRoot(path);
-          if (pathStr != null && !mRoots.contains(pathStr)) {
-            mRoots.add(pathStr);
+          final Path sourceRootPath = getJavaSourceRoot(path);
+          if (sourceRootPath != null && !mRoots.contains(sourceRootPath.toString())) {
+            mRoots.add(sourceRootPath.toString());
           }
         }
       }
@@ -42,7 +41,7 @@ public class JavaRootPaths {
     }
   }
 
-  private static String getJavaSourceRoot(final Path javaPath) {
+  private static Path getJavaSourceRoot(final Path javaPath) {
     CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
 
@@ -77,6 +76,6 @@ public class JavaRootPaths {
 
       directory = directory.getParentFile();
     }
-    return directory.getParentFile().toString();
+    return directory.getParentFile().toPath();
   }
 }
