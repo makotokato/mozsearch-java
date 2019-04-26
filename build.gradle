@@ -36,3 +36,10 @@ task fatJar(type: Jar) {
     }
     with jar
 }
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
