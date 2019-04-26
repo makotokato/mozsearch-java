@@ -25,7 +25,7 @@ public class JavaRootPathsTest extends TestCase {
 
   public void testRootPaths() {
     JavaRootPaths rootPaths = new JavaRootPaths(Paths.get("."));
-    List<String> paths = rootPaths.getPackageRoots();
-    assertEquals(Paths.get(paths.get(0)), Paths.get("./src/main/java"));
+    Path[] paths = rootPaths.getPackageRoots();
+    assertEquals(paths[0], Paths.get("./src/main/java"));
   }
 }

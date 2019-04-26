@@ -13,21 +13,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.nio.file.Path;
 
 public class JavaIndexer {
   private File mSourceDir;
   private File mOutputDir;
-  private String[] mRootPaths;
+  private Path[] mRootPaths;
 
-  public JavaIndexer(final File sourceDir, final File outputDir) {
-    mSourceDir = sourceDir;
-    mOutputDir = outputDir;
+  public JavaIndexer(final Path sourceDir, final Path outputDir) {
+    mSourceDir = sourceDir.toFile();
+    mOutputDir = outputDir.toFile();
   }
 
-  public void make(String[] rootPaths) {
+  public void make(final Path[] rootPaths) {
     mRootPaths = rootPaths;
-    for (String path : rootPaths) {
-      lookingAllChildren(new File(path), mSourceDir, mOutputDir);
+    for (Path path : rootPaths) {
+      lookingAllChildren(path.toFile(), mSourceDir, mOutputDir);
     }
   }
 
@@ -59,8 +60,8 @@ public class JavaIndexer {
       } catch (IOException exception) {
       }
     }
-    for (String path : mRootPaths) {
-      solver.add(new JavaParserTypeSolver(path));
+    for (Path path : mRootPaths) {
+      solver.add(new JavaParserTypeSolver(path.toString()));
     }
 
     final JavaSymbolSolver symbolSolver = new JavaSymbolSolver(solver);

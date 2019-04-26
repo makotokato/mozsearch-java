@@ -14,15 +14,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class JavaRootPaths {
-  private ArrayList<String> mRoots;
+  private ArrayList<Path> mRoots;
 
   public JavaRootPaths(final Path aRoot) {
-    mRoots = new ArrayList<String>();
+    mRoots = new ArrayList<Path>();
     generateSourceRoot(aRoot);
   }
 
-  public List<String> getPackageRoots() {
-    return mRoots;
+  public Path[] getPackageRoots() {
+    return mRoots.toArray(new Path[mRoots.size()]);
   }
 
   private void generateSourceRoot(final Path root) {
@@ -33,7 +33,7 @@ public class JavaRootPaths {
         } else if (path.toString().endsWith(".java")) {
           final Path sourceRootPath = getJavaSourceRoot(path);
           if (sourceRootPath != null && !mRoots.contains(sourceRootPath.toString())) {
-            mRoots.add(sourceRootPath.toString());
+            mRoots.add(sourceRootPath);
           }
         }
       }
