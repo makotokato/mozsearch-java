@@ -49,6 +49,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, name, "");
   }
 
+  @SuppressWarnings("unchecked")
   private void outputSource(final Node n, final SimpleName name, final String scope) {
     JSONObject obj = new JSONObject();
     obj.put(
@@ -98,6 +99,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, name, "");
   }
 
+  @SuppressWarnings("unchecked")
   private void outputTarget(final Node n, final SimpleName name, final String scope) {
     JSONObject obj = new JSONObject();
     obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1));
@@ -137,8 +139,13 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
 
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
-    outputSource(n, n.getName(), a);
-    outputTarget(n, n.getName(), a);
+    if (n.isNestedType()) {
+        outputSource(n, n.getName(), "");
+        outputTarget(n, n.getName(), "");
+    } else {
+        outputSource(n, n.getName(), a);
+        outputTarget(n, n.getName(), a);
+    }
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
       outputSource(classType, classType.getName());
