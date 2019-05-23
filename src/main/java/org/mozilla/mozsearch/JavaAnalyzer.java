@@ -1,4 +1,4 @@
-package net.wontfix.mozsearch;
+package org.mozilla.mozsearch;
 
 import java.nio.file.Paths;
 

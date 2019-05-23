@@ -1,4 +1,4 @@
-package net.wontfix.mozsearch;
+package org.mozilla.mozsearch;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;

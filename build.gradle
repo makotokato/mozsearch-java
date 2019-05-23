@@ -11,7 +11,7 @@ dependencies {
     testCompile 'junit:junit:3.8.1'
 }
 
-group = 'net.wontfix.mozsearch'
+group = 'org.mozilla.mozsearch'
 version = '0.1'
 description = 'mozsearch-java'
 sourceCompatibility = '1.8'
@@ -26,7 +26,7 @@ allprojects {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Main-Class': 'net.wontfix.mozsearch.JavaAnalyzer'
+        attributes 'Main-Class': 'org.mozilla.mozsearch.JavaAnalyzer'
     }
     baseName = project.name + '-all'
     from {
