@@ -96,7 +96,11 @@ public class JavaIndexer {
 
     System.out.print("Processing " + file.toPath().toString() + " ");
     MozSearchVisitor visitor = new MozSearchVisitor(outputPath);
-    unit.accept(visitor, packagename);
+    try {
+      unit.accept(visitor, packagename);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
     System.out.println("Done");
   }
 }
