@@ -35,8 +35,17 @@ public class JavaRootPaths {
           generateSourceRoot(path);
         } else if (path.toString().endsWith(".java")) {
           final Path sourceRootPath = getJavaSourceRoot(path);
-          if (sourceRootPath != null && !mRoots.contains(sourceRootPath.toString())) {
-            mRoots.add(sourceRootPath);
+          if (sourceRootPath != null) {
+            boolean found = false;
+            for (Path p : mRoots) {
+              if (p.compareTo(sourceRootPath) == 0) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              mRoots.add(sourceRootPath);
+            }
           }
         }
       }
