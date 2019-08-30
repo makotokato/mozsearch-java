@@ -10,10 +10,10 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.nio.file.Path;
 
 public class JavaIndexer {
   private File mSourceDir;
@@ -27,6 +27,13 @@ public class JavaIndexer {
 
   public void make(final Path[] rootPaths) {
     mRootPaths = rootPaths;
+    for (Path path : rootPaths) {
+      lookingAllChildren(path.toFile(), mSourceDir, mOutputDir);
+    }
+  }
+
+  public void makeWithoutAllPackageRoot(final Path[] rootPaths) {
+    mRootPaths = null;
     for (Path path : rootPaths) {
       lookingAllChildren(path.toFile(), mSourceDir, mOutputDir);
     }
@@ -60,8 +67,19 @@ public class JavaIndexer {
       } catch (IOException exception) {
       }
     }
-    for (Path path : mRootPaths) {
-      solver.add(new JavaParserTypeSolver(path.toString()));
+
+    if (mRootPaths == null) {
+      for (File file : files) {
+        if (file.isFile() && file.getName().endsWith(".java")) {
+          solver.add(
+              new JavaParserTypeSolver(JavaRootPaths.getJavaSourceRoot(file.toPath()).toString()));
+          break;
+        }
+      }
+    } else {
+      for (Path path : mRootPaths) {
+        solver.add(new JavaParserTypeSolver(path.toString()));
+      }
     }
 
     final JavaSymbolSolver symbolSolver = new JavaSymbolSolver(solver);

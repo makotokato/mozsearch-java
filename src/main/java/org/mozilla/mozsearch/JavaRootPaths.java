@@ -10,18 +10,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class JavaRootPaths {
   private ArrayList<Path> mRoots;
+  private Path mRootPath;
 
   public JavaRootPaths(final Path aRoot) {
     mRoots = new ArrayList<Path>();
-    generateSourceRoot(aRoot);
+    mRootPath = aRoot;
   }
 
   public Path[] getPackageRoots() {
+    if (mRoots.isEmpty()) {
+      generateSourceRoot(mRootPath);
+    }
     return mRoots.toArray(new Path[mRoots.size()]);
   }
 
@@ -41,7 +44,7 @@ public class JavaRootPaths {
     }
   }
 
-  private static Path getJavaSourceRoot(final Path javaPath) {
+  public static Path getJavaSourceRoot(final Path javaPath) {
     CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
 

@@ -14,6 +14,7 @@ public class JavaAnalyzer {
     System.out.println("Generating references ...");
 
     JavaIndexer indexer = new JavaIndexer(Paths.get(args[0]), Paths.get(args[1]));
-    indexer.make(paths.getPackageRoots());
+    //indexer.make(paths.getPackageRoots());
+    indexer.makeWithoutAllPackageRoot(paths.getPackageRoots());
   }
 }
