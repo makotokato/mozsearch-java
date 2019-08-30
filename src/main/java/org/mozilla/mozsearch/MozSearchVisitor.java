@@ -99,8 +99,12 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, name, "");
   }
 
-  @SuppressWarnings("unchecked")
   private void outputTarget(final Node n, final SimpleName name, final String scope) {
+    outputTarget(n, name, scope, "");
+  }
+
+  @SuppressWarnings("unchecked")
+  private void outputTarget(final Node n, final SimpleName name, final String scope, final String context) {
     JSONObject obj = new JSONObject();
     obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1));
     obj.put("target", 1);
@@ -111,30 +115,42 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     } else if (n instanceof ClassOrInterfaceType) {
       obj.put("kind", "use");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else if (n instanceof VariableDeclarator) {
       obj.put("kind", "def");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else if (n instanceof ConstructorDeclaration) {
       obj.put("kind", "def");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else if (n instanceof MethodDeclaration) {
       obj.put("kind", "def");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else if (n instanceof MethodCallExpr) {
       obj.put("kind", "use");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else if (n instanceof FieldAccessExpr) {
       obj.put("kind", "use");
       obj.put("pretty", scope + name.getIdentifier());
+      obj.put("context", context);
     } else {
       obj.put("kind", "use");
       obj.put("pretty", name.getIdentifier());
+      obj.put("context", context);
     }
     String fullName = scope + name.getIdentifier();
     fullName = fullName.replace('.', '#');
     obj.put("sym", fullName);
 
     outputJSON(obj);
+  }
+
+  private void outputSourceAndTarget(final Node n, final SimpleName name, final String scope, final String context) {
+    outputSource(n, name, scope);
+    outputTarget(n, name, scope, context);
   }
 
   private void outputSourceAndTarget(final Node n, final SimpleName name, final String scope) {
@@ -167,17 +183,20 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(VariableDeclarator n, String a) {
     String scope = "";
+    String context = "";
+
     Optional<Node> parent = n.getParentNode();
     try {
       parent = parent.get().getParentNode();
       if (parent.get() instanceof ClassOrInterfaceDeclaration) {
         scope = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier() + ".";
+        context = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier();
       }
     } catch (Exception e) {
     }
 
     if (scope.length() > 0) {
-      outputSourceAndTarget(n, n.getName(), scope);
+      outputSourceAndTarget(n, n.getName(), scope, context);
     }
 
     super.visit(n, a);
@@ -186,15 +205,18 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(ConstructorDeclaration n, String a) {
     String scope = "";
+    String context = "";
+
     try {
       Optional<Node> parent = n.getParentNode();
       if (parent.get() instanceof ClassOrInterfaceDeclaration) {
-        scope = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier() + ".";
+        context = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier();
+        scope = context + ".";
       }
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope);
+    outputSourceAndTarget(n, n.getName(), scope, context);
 
     super.visit(n, a);
   }
@@ -202,15 +224,21 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(MethodDeclaration n, String a) {
     String scope = "";
+    String context = "";
+
     try {
       Optional<Node> parent = n.getParentNode();
       if (parent.get() instanceof ClassOrInterfaceDeclaration) {
-        scope = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier() + ".";
+        context = a + ((ClassOrInterfaceDeclaration) parent.get()).getName().getIdentifier();
+        scope = context + ".";
       }
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope);
+    outputSourceAndTarget(n, n.getName(), scope, context);
+    if (scope.length() > 0) {
+      outputSourceAndTarget(n, n.getName(), "", context);
+    }
 
     super.visit(n, a);
   }
@@ -218,13 +246,23 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(MethodCallExpr n, String a) {
     String scope = "";
+    String context = "";
+
     try {
       ResolvedMethodDeclaration decl = n.resolve();
       scope = decl.getPackageName() + "." + decl.getClassName() + ".";
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope);
+    try {
+      Optional<Node> parent = n.getParentNode();
+      if (parent.get() instanceof MethodDeclaration) {
+        context = a + ((MethodDeclaration) parent.get()).getName().getIdentifier();
+      }
+    } catch (Exception e) {
+    }
+
+    outputSourceAndTarget(n, n.getName(), scope, context);
 
     super.visit(n, a);
   }
