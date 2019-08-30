@@ -137,23 +137,29 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputSourceAndTarget(final Node n, final SimpleName name, final String scope) {
+    outputSource(n, name, scope);
+    outputTarget(n, name, scope);
+  }
+
+  private void outputSourceAndTarget(final Node n, final SimpleName name) {
+    outputSource(n, name);
+    outputTarget(n, name);
+  }
+
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     if (n.isNestedType()) {
-        outputSource(n, n.getName(), "");
-        outputTarget(n, n.getName(), "");
+        outputSourceAndTarget(n, n.getName());
     } else {
-        outputSource(n, n.getName(), a);
-        outputTarget(n, n.getName(), a);
+        outputSourceAndTarget(n, n.getName(), a);
     }
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
-      outputSource(classType, classType.getName());
-      outputTarget(classType, classType.getName());
+      outputSourceAndTarget(classType, classType.getName());
     }
     for (ClassOrInterfaceType classType : n.getImplementedTypes()) {
-      outputSource(classType, classType.getName());
-      outputTarget(classType, classType.getName());
+      outputSourceAndTarget(classType, classType.getName());
     }
     super.visit(n, a);
   }
@@ -171,8 +177,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     }
 
     if (scope.length() > 0) {
-      outputSource(n, n.getName(), scope);
-      outputTarget(n, n.getName(), scope);
+      outputSourceAndTarget(n, n.getName(), scope);
     }
 
     super.visit(n, a);
@@ -189,8 +194,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope);
+    outputSourceAndTarget(n, n.getName(), scope);
 
     super.visit(n, a);
   }
@@ -206,8 +210,7 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope);
+    outputSourceAndTarget(n, n.getName(), scope);
 
     super.visit(n, a);
   }
@@ -215,15 +218,13 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(MethodCallExpr n, String a) {
     String scope = "";
-    long startTime = System.currentTimeMillis();
     try {
       ResolvedMethodDeclaration decl = n.resolve();
       scope = decl.getPackageName() + "." + decl.getClassName() + ".";
     } catch (Exception e) {
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope);
+    outputSourceAndTarget(n, n.getName(), scope);
 
     super.visit(n, a);
   }
