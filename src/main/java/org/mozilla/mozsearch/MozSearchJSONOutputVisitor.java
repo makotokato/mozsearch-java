@@ -12,32 +12,36 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import org.json.simple.JSONObject;
 
-public class MozSearchVisitor extends VoidVisitorAdapter<String> {
-  private String mOutputPath;
+public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
+  private Path mOutputPath;
 
-  public MozSearchVisitor(final String output) {
+  public MozSearchJSONOutputVisitor(final Path output) {
     mOutputPath = output;
-    File file = new File(mOutputPath);
-    if (file.getParentFile().exists()) {
-      file.delete();
+    if (Files.exists(output)) {
+      try {
+        Files.delete(output);
+      } catch (IOException exception) {
+        System.err.println(exception);
+      }
     }
   }
 
   private void outputJSON(final JSONObject obj) {
     System.out.print(".");
     try {
-      File file = new File(mOutputPath);
-      if (!file.getParentFile().exists()) {
-        file.getParentFile().mkdirs();
+      if (!Files.exists(mOutputPath.getParent())) {
+        Files.createDirectories(mOutputPath.getParent());
       }
-      PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+      PrintWriter printWriter =
+          new PrintWriter(new BufferedWriter(new FileWriter(mOutputPath.toFile(), true)));
       printWriter.println(obj);
       printWriter.close();
     } catch (IOException exception) {
@@ -104,7 +108,8 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   }
 
   @SuppressWarnings("unchecked")
-  private void outputTarget(final Node n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(
+      final Node n, final SimpleName name, final String scope, final String context) {
     JSONObject obj = new JSONObject();
     obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1));
     obj.put("target", 1);
@@ -148,7 +153,8 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSourceAndTarget(final Node n, final SimpleName name, final String scope, final String context) {
+  private void outputSourceAndTarget(
+      final Node n, final SimpleName name, final String scope, final String context) {
     outputSource(n, name, scope);
     outputTarget(n, name, scope, context);
   }
@@ -166,9 +172,9 @@ public class MozSearchVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     if (n.isNestedType()) {
-        outputSourceAndTarget(n, n.getName());
+      outputSourceAndTarget(n, n.getName());
     } else {
-        outputSourceAndTarget(n, n.getName(), a);
+      outputSourceAndTarget(n, n.getName(), a);
     }
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {

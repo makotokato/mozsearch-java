@@ -8,57 +8,68 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class JavaIndexer {
-  private File mSourceDir;
-  private File mOutputDir;
+  private Path mSourceDir;
+  private Path mOutputDir;
   private Path[] mRootPaths;
 
   public JavaIndexer(final Path sourceDir, final Path outputDir) {
-    mSourceDir = sourceDir.toFile();
-    mOutputDir = outputDir.toFile();
+    mSourceDir = sourceDir;
+    mOutputDir = outputDir;
   }
 
   public void make(final Path[] rootPaths) {
     mRootPaths = rootPaths;
     for (Path path : rootPaths) {
-      lookingAllChildren(path.toFile(), mSourceDir, mOutputDir);
+      try {
+        lookingAllChildren(path, mSourceDir, mOutputDir);
+      } catch (IOException exception) {
+        System.err.println(exception);
+      }
     }
   }
 
   public void makeWithoutAllPackageRoot(final Path[] rootPaths) {
     mRootPaths = null;
     for (Path path : rootPaths) {
-      lookingAllChildren(path.toFile(), mSourceDir, mOutputDir);
+      try {
+        lookingAllChildren(path, mSourceDir, mOutputDir);
+      } catch (IOException exception) {
+        System.err.println(exception);
+      }
     }
   }
 
-  private void lookingAllChildren(final File currentDir, final File srcDir, final File outputDir) {
-    ArrayList<File> javaFiles = new ArrayList<File>();
-    for (File file : currentDir.listFiles()) {
-      if (file.isDirectory()) {
+  private void lookingAllChildren(final Path currentDir, final Path srcDir, final Path outputDir)
+      throws IOException {
+    ArrayList<Path> javaFiles = new ArrayList<Path>();
+    List<Path> files = Files.list(currentDir).collect(Collectors.toList());
+    for (Path file : files) {
+      if (Files.isDirectory(file)) {
         lookingAllChildren(file, srcDir, outputDir);
-      } else if (file.isFile() && file.getName().endsWith(".java")) {
+      } else if (file.toString().endsWith(".java")) {
         javaFiles.add(file);
       }
     }
     makeIndexes(javaFiles, srcDir, outputDir);
   }
 
-  private void makeIndexes(final List<File> files, final File srcDir, final File outputDir) {
+  private void makeIndexes(final List<Path> files, final Path srcDir, final Path outputDir) {
     if (files.isEmpty()) {
       return;
     }
 
     final CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
-    solver.add(new JavaParserTypeSolver(files.get(0).getParent()));
     // Set Android SDK's JAR using ANDROID_SDK_ROOT
     String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
@@ -68,24 +79,24 @@ public class JavaIndexer {
       }
     }
 
-    if (mRootPaths == null) {
-      for (File file : files) {
-        if (file.isFile() && file.getName().endsWith(".java")) {
-          solver.add(
-              new JavaParserTypeSolver(JavaRootPaths.getJavaSourceRoot(file.toPath()).toString()));
-          break;
-        }
-      }
-    } else {
+    if (mRootPaths != null) {
       for (Path path : mRootPaths) {
         solver.add(new JavaParserTypeSolver(path.toString()));
+      }
+    }
+
+    ArrayList<Path> dirs = new ArrayList<Path>();
+    for (Path file : files) {
+      if (!dirs.contains(file.getParent())) {
+        solver.add(new JavaParserTypeSolver(file.getParent().toFile()));
+        dirs.add(file.getParent());
       }
     }
 
     final JavaSymbolSolver symbolSolver = new JavaSymbolSolver(solver);
     StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
 
-    for (File file : files) {
+    for (Path file : files) {
       try {
         makeIndex(
             file,
@@ -100,11 +111,11 @@ public class JavaIndexer {
     System.gc();
   }
 
-  private void makeIndex(final File file, final String outputPath) throws IOException {
-    if (!file.isFile() || !file.getName().endsWith(".java")) {
+  private void makeIndex(final Path file, final String outputPath) throws IOException {
+    if (!file.toString().endsWith(".java")) {
       return;
     }
-    final CompilationUnit unit = StaticJavaParser.parse(file.toPath());
+    final CompilationUnit unit = StaticJavaParser.parse(file);
 
     String packagename = "";
     Optional<PackageDeclaration> p = unit.getPackageDeclaration();
@@ -112,8 +123,8 @@ public class JavaIndexer {
       packagename = p.get().getName().toString() + ".";
     }
 
-    System.out.print("Processing " + file.toPath().toString() + " ");
-    MozSearchVisitor visitor = new MozSearchVisitor(outputPath);
+    System.out.print("Processing " + file.toString() + " ");
+    MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(Paths.get(outputPath));
     try {
       unit.accept(visitor, packagename);
     } catch (Exception e) {
