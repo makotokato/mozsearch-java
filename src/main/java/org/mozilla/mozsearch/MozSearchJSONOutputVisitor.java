@@ -35,7 +35,6 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   private void outputJSON(final JSONObject obj) {
-    System.out.print(".");
     try {
       if (!Files.exists(mOutputPath.getParent())) {
         Files.createDirectories(mOutputPath.getParent());

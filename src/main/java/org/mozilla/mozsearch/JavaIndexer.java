@@ -33,19 +33,22 @@ public class JavaIndexer {
 
   public void outputIndexes() {
     try {
-      lookingAllChildren(mSourceDir, mSourceDir, mOutputDir);
+      indexAllChildren(mSourceDir, mSourceDir, mOutputDir);
     } catch (IOException exception) {
       System.err.println(exception);
     }
   }
 
-  private void lookingAllChildren(final Path currentDir, final Path srcDir, final Path outputDir)
+  private void indexAllChildren(final Path currentDir, final Path srcDir, final Path outputDir)
       throws IOException {
+    if (currentDir.toFile().getName().equals(".git") || currentDir.toFile().getName().equals(".hg")) {
+      return;
+    }
     ArrayList<Path> javaFiles = new ArrayList<Path>();
     List<Path> files = Files.list(currentDir).collect(Collectors.toList());
     for (Path file : files) {
       if (Files.isDirectory(file)) {
-        lookingAllChildren(file, srcDir, outputDir);
+        indexAllChildren(file, srcDir, outputDir);
       } else if (file.toString().endsWith(".java")) {
         javaFiles.add(file);
       }
@@ -113,13 +116,12 @@ public class JavaIndexer {
       packagename = p.get().getName().toString() + ".";
     }
 
-    System.out.print("Processing " + file.toString() + " ");
+    System.out.println("Processing " + file.toString() + " ");
     MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(Paths.get(outputPath));
     try {
       unit.accept(visitor, packagename);
     } catch (Exception e) {
       e.printStackTrace();
     }
-    System.out.println("Done");
   }
 }
