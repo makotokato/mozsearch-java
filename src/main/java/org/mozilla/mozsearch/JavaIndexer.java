@@ -94,9 +94,8 @@ public class JavaIndexer {
       try {
         makeIndex(
             file,
-            outputDir.toString()
-                + "/./"
-                + file.toString().substring(srcDir.toString().length() + 1));
+            Paths.get(
+                outputDir.toString(), file.toString().substring(srcDir.toString().length() + 1)));
       } catch (Exception exception) {
         System.err.println(exception);
       }
@@ -105,7 +104,7 @@ public class JavaIndexer {
     System.gc();
   }
 
-  private void makeIndex(final Path file, final String outputPath) throws IOException {
+  private void makeIndex(final Path file, final Path outputPath) throws IOException {
     if (!file.toString().endsWith(".java")) {
       return;
     }
@@ -118,11 +117,7 @@ public class JavaIndexer {
     }
 
     System.out.println("Processing " + file.toString() + " ");
-    MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(Paths.get(outputPath));
-    try {
-      unit.accept(visitor, packagename);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(outputPath);
+    unit.accept(visitor, packagename);
   }
 }
