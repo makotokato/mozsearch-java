@@ -27,25 +27,15 @@ public class JavaIndexer {
     mOutputDir = outputDir;
   }
 
-  public void make(final Path[] rootPaths) {
+  public void addRootPaths(final Path[] rootPaths) {
     mRootPaths = rootPaths;
-    for (Path path : rootPaths) {
-      try {
-        lookingAllChildren(path, mSourceDir, mOutputDir);
-      } catch (IOException exception) {
-        System.err.println(exception);
-      }
-    }
   }
 
-  public void makeWithoutAllPackageRoot(final Path[] rootPaths) {
-    mRootPaths = null;
-    for (Path path : rootPaths) {
-      try {
-        lookingAllChildren(path, mSourceDir, mOutputDir);
-      } catch (IOException exception) {
-        System.err.println(exception);
-      }
+  public void outputIndexes() {
+    try {
+      lookingAllChildren(mSourceDir, mSourceDir, mOutputDir);
+    } catch (IOException exception) {
+      System.err.println(exception);
     }
   }
 
