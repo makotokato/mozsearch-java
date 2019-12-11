@@ -11,6 +11,7 @@ public class JavaCodeAnalyzer {
 
     System.out.println("Generating references ...");
     JavaIndexer indexer = new JavaIndexer(Paths.get(args[0]), Paths.get(args[1]));
+    final JavaRootPaths paths = new JavaRootPaths(Paths.get(args[0]));
     indexer.makeWithoutAllPackageRoot(paths.getPackageRoots());
   }
 }
