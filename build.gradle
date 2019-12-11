@@ -6,7 +6,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.javaparser:javaparser-symbol-solver-core:3.14.12'
+    compile 'com.github.javaparser:javaparser-symbol-solver-core:3.15.6'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
     testCompile 'junit:junit:3.8.1'
 }
@@ -28,7 +28,7 @@ task fatJar(type: Jar) {
     manifest {
         attributes 'Main-Class': 'org.mozilla.mozsearch.JavaCodeAnalyzer'
     }
-    baseName = project.name + '-all'
+    baseName = project.name + '-all-deps'
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
