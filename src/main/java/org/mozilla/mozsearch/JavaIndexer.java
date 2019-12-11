@@ -41,7 +41,8 @@ public class JavaIndexer {
 
   private void indexAllChildren(final Path currentDir, final Path srcDir, final Path outputDir)
       throws IOException {
-    if (currentDir.toFile().getName().equals(".git") || currentDir.toFile().getName().equals(".hg")) {
+    if (currentDir.toFile().getName().equals(".git")
+        || currentDir.toFile().getName().equals(".hg")) {
       return;
     }
     ArrayList<Path> javaFiles = new ArrayList<Path>();
