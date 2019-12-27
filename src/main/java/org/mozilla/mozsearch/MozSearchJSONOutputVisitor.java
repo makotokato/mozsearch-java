@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   private Path mOutputPath;
@@ -52,45 +52,41 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, name, "");
   }
 
-  @SuppressWarnings("unchecked")
-  private void outputSource(final Node n, final SimpleName name, final String scope) {
+  private JSONObject outputSourceLine(final SimpleName name) {
     JSONObject obj = new JSONObject();
-    obj.put(
-        "loc",
-        name.getBegin().get().line
-            + ":"
-            + (name.getBegin().get().column - 1)
-            + "-"
-            + (name.getBegin().get().column - 1 + name.getIdentifier().length()));
-    obj.put("source", 1);
+    return obj.put(
+            "loc",
+            name.getBegin().get().line
+                + ":"
+                + (name.getBegin().get().column - 1)
+                + "-"
+                + (name.getBegin().get().column - 1 + name.getIdentifier().length()))
+        .put("source", 1);
+  }
+
+  private void outputSource(final Node n, final SimpleName name, final String scope) {
+    JSONObject obj = outputSourceLine(name);
     if (n instanceof ClassOrInterfaceDeclaration) {
-      obj.put("syntax", "def,type");
       if (((ClassOrInterfaceDeclaration) n).isInterface()) {
-        obj.put("pretty", "interface " + scope + name.getIdentifier());
+        obj.put("syntax", "def,type").put("pretty", "interface " + scope + name.getIdentifier());
       } else {
-        obj.put("pretty", "class " + scope + name.getIdentifier());
+        obj.put("syntax", "def,type").put("pretty", "class " + scope + name.getIdentifier());
       }
     } else if (n instanceof ClassOrInterfaceType) {
-      obj.put("syntax", "type,use");
-      obj.put("pretty", "class " + scope + name.getIdentifier());
+      obj.put("syntax", "type,use").put("pretty", "class " + scope + name.getIdentifier());
     } else if (n instanceof VariableDeclarator) {
-      obj.put("syntax", "def");
-      obj.put("pretty", "field " + scope + name.getIdentifier());
+      obj.put("syntax", "def").put("pretty", "field " + scope + name.getIdentifier());
     } else if (n instanceof ConstructorDeclaration) {
-      obj.put("syntax", "def,function");
-      obj.put("pretty", "constructor " + scope + name.getIdentifier());
+      obj.put("syntax", "def,function")
+          .put("pretty", "constructor " + scope + name.getIdentifier());
     } else if (n instanceof MethodDeclaration) {
-      obj.put("syntax", "def,function");
-      obj.put("pretty", "method " + scope + name.getIdentifier());
+      obj.put("syntax", "def,function").put("pretty", "method " + scope + name.getIdentifier());
     } else if (n instanceof MethodCallExpr) {
-      obj.put("syntax", "use,function");
-      obj.put("pretty", "method " + scope + name.getIdentifier());
+      obj.put("syntax", "use,function").put("pretty", "method " + scope + name.getIdentifier());
     } else if (n instanceof FieldAccessExpr) {
-      obj.put("syntax", "use,variable");
-      obj.put("pretty", "field " + scope + name.getIdentifier());
+      obj.put("syntax", "use,variable").put("pretty", "field " + scope + name.getIdentifier());
     } else {
-      obj.put("syntax", "use");
-      obj.put("pretty", scope + name.getIdentifier());
+      obj.put("syntax", "use").put("pretty", scope + name.getIdentifier());
     }
     String fullName = scope + name.getIdentifier();
     obj.put("sym", fullName.replace('.', '#'));
@@ -106,44 +102,32 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, name, scope, "");
   }
 
-  @SuppressWarnings("unchecked")
+  private JSONObject outputTargetLine(final SimpleName name) {
+    JSONObject obj = new JSONObject();
+    return obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1))
+        .put("target", 1);
+  }
+
   private void outputTarget(
       final Node n, final SimpleName name, final String scope, final String context) {
-    JSONObject obj = new JSONObject();
-    obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1));
-    obj.put("target", 1);
+    JSONObject obj = outputTargetLine(name);
 
     if (n instanceof ClassOrInterfaceDeclaration) {
-      obj.put("kind", "def");
-      obj.put("pretty", scope + name.getIdentifier());
+      obj.put("kind", "def").put("pretty", scope + name.getIdentifier());
     } else if (n instanceof ClassOrInterfaceType) {
-      obj.put("kind", "use");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else if (n instanceof VariableDeclarator) {
-      obj.put("kind", "def");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else if (n instanceof ConstructorDeclaration) {
-      obj.put("kind", "def");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else if (n instanceof MethodDeclaration) {
-      obj.put("kind", "def");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else if (n instanceof MethodCallExpr) {
-      obj.put("kind", "use");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else if (n instanceof FieldAccessExpr) {
-      obj.put("kind", "use");
-      obj.put("pretty", scope + name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
     } else {
-      obj.put("kind", "use");
-      obj.put("pretty", name.getIdentifier());
-      obj.put("context", context);
+      obj.put("kind", "use").put("pretty", name.getIdentifier()).put("context", context);
     }
     String fullName = scope + name.getIdentifier();
     fullName = fullName.replace('.', '#');
