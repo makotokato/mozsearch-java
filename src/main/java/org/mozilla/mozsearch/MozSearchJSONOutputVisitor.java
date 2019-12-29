@@ -48,46 +48,200 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     }
   }
 
+  public class MozSearchJSONObject extends JSONObject {
+    public MozSearchJSONObject() {
+      super();
+    }
+
+    public MozSearchJSONObject addSourceLine(final SimpleName name) {
+      put(
+              "loc",
+              name.getBegin().get().line
+                  + ":"
+                  + (name.getBegin().get().column - 1)
+                  + "-"
+                  + (name.getBegin().get().column - 1 + name.getIdentifier().length()))
+          .put("source", 1);
+      return this;
+    }
+
+    public MozSearchJSONObject addTargetLine(final SimpleName name) {
+      put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1))
+          .put("target", 1);
+      return this;
+    }
+
+    private JSONObject addSource(
+        final ClassOrInterfaceDeclaration n, final SimpleName name, final String scope) {
+      if (((ClassOrInterfaceDeclaration) n).isInterface()) {
+        return put("syntax", "def,type").put("pretty", "interface " + scope + name.getIdentifier());
+      }
+      return put("syntax", "def,type").put("pretty", "class " + scope + name.getIdentifier());
+    }
+
+    public JSONObject addSource(
+        final ClassOrInterfaceType n, final SimpleName name, final String scope) {
+      return put("syntax", "type,use").put("pretty", "class " + scope + name.getIdentifier());
+    }
+
+    public JSONObject addSource(
+        final ConstructorDeclaration n, final SimpleName name, final String scope) {
+      return put("syntax", "def,function")
+          .put("pretty", "constructor " + scope + name.getIdentifier());
+    }
+
+    public JSONObject addSource(
+        final MethodDeclaration n, final SimpleName name, final String scope) {
+      return put("syntax", "def,function").put("pretty", "method " + scope + name.getIdentifier());
+    }
+
+    private JSONObject addSource(
+        final VariableDeclarator n, final SimpleName name, final String scope) {
+      return put("syntax", "def").put("pretty", "field " + scope + name.getIdentifier());
+    }
+
+    private JSONObject addSource(
+        final MethodCallExpr n, final SimpleName name, final String scope) {
+      return put("syntax", "use,function").put("pretty", "method " + scope + name.getIdentifier());
+    }
+
+    private JSONObject addSource(
+        final FieldAccessExpr n, final SimpleName name, final String scope) {
+      return put("syntax", "use,variable").put("pretty", "field " + scope + name.getIdentifier());
+    }
+
+    public JSONObject addTarget(
+        final ClassOrInterfaceDeclaration n,
+        final SimpleName name,
+        final String scope,
+        final String context) {
+      return put("kind", "def").put("pretty", scope + name.getIdentifier());
+    }
+
+    public JSONObject addTarget(
+        final ClassOrInterfaceType n,
+        final SimpleName name,
+        final String scope,
+        final String context) {
+      return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+
+    public JSONObject addTarget(
+        final ConstructorDeclaration n,
+        final SimpleName name,
+        final String scope,
+        final String context) {
+      return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+
+    public JSONObject addTarget(
+        final MethodDeclaration n,
+        final SimpleName name,
+        final String scope,
+        final String context) {
+      return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+
+    public JSONObject addTarget(
+        final VariableDeclarator n,
+        final SimpleName name,
+        final String scope,
+        final String context) {
+      return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+
+    public JSONObject addTarget(
+        final MethodCallExpr n, final SimpleName name, final String scope, final String context) {
+      return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+
+    public JSONObject addTarget(
+        final FieldAccessExpr n, final SimpleName name, final String scope, final String context) {
+      return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+    }
+  }
+
+  private void outputSource(
+      final ClassOrInterfaceDeclaration n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(
+      final ClassOrInterfaceType n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(
+      final ConstructorDeclaration n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(final MethodDeclaration n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(final VariableDeclarator n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(final MethodCallExpr n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputSource(final FieldAccessExpr n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
   private void outputSource(final Node n, final SimpleName name) {
     outputSource(n, name, "");
   }
 
-  private JSONObject outputSourceLine(final SimpleName name) {
-    JSONObject obj = new JSONObject();
-    return obj.put(
-            "loc",
-            name.getBegin().get().line
-                + ":"
-                + (name.getBegin().get().column - 1)
-                + "-"
-                + (name.getBegin().get().column - 1 + name.getIdentifier().length()))
-        .put("source", 1);
-  }
-
   private void outputSource(final Node n, final SimpleName name, final String scope) {
-    JSONObject obj = outputSourceLine(name);
-    if (n instanceof ClassOrInterfaceDeclaration) {
-      if (((ClassOrInterfaceDeclaration) n).isInterface()) {
-        obj.put("syntax", "def,type").put("pretty", "interface " + scope + name.getIdentifier());
-      } else {
-        obj.put("syntax", "def,type").put("pretty", "class " + scope + name.getIdentifier());
-      }
-    } else if (n instanceof ClassOrInterfaceType) {
-      obj.put("syntax", "type,use").put("pretty", "class " + scope + name.getIdentifier());
-    } else if (n instanceof VariableDeclarator) {
-      obj.put("syntax", "def").put("pretty", "field " + scope + name.getIdentifier());
-    } else if (n instanceof ConstructorDeclaration) {
-      obj.put("syntax", "def,function")
-          .put("pretty", "constructor " + scope + name.getIdentifier());
-    } else if (n instanceof MethodDeclaration) {
-      obj.put("syntax", "def,function").put("pretty", "method " + scope + name.getIdentifier());
-    } else if (n instanceof MethodCallExpr) {
-      obj.put("syntax", "use,function").put("pretty", "method " + scope + name.getIdentifier());
-    } else if (n instanceof FieldAccessExpr) {
-      obj.put("syntax", "use,variable").put("pretty", "field " + scope + name.getIdentifier());
-    } else {
-      obj.put("syntax", "use").put("pretty", scope + name.getIdentifier());
-    }
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name);
+    obj.put("syntax", "use").put("pretty", scope + name.getIdentifier());
     String fullName = scope + name.getIdentifier();
     obj.put("sym", fullName.replace('.', '#'));
 
@@ -102,33 +256,83 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, name, scope, "");
   }
 
-  private JSONObject outputTargetLine(final SimpleName name) {
-    JSONObject obj = new JSONObject();
-    return obj.put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1))
-        .put("target", 1);
+  private void outputTarget(
+      final ClassOrInterfaceDeclaration n,
+      final SimpleName name,
+      final String scope,
+      final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final ClassOrInterfaceType n,
+      final SimpleName name,
+      final String scope,
+      final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final VariableDeclarator n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final MethodDeclaration n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final MethodCallExpr n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final FieldAccessExpr n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
   }
 
   private void outputTarget(
       final Node n, final SimpleName name, final String scope, final String context) {
-    JSONObject obj = outputTargetLine(name);
-
-    if (n instanceof ClassOrInterfaceDeclaration) {
-      obj.put("kind", "def").put("pretty", scope + name.getIdentifier());
-    } else if (n instanceof ClassOrInterfaceType) {
-      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else if (n instanceof VariableDeclarator) {
-      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else if (n instanceof ConstructorDeclaration) {
-      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else if (n instanceof MethodDeclaration) {
-      obj.put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else if (n instanceof MethodCallExpr) {
-      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else if (n instanceof FieldAccessExpr) {
-      obj.put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
-    } else {
-      obj.put("kind", "use").put("pretty", name.getIdentifier()).put("context", context);
-    }
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name);
+    obj.put("kind", "use").put("pretty", name.getIdentifier()).put("context", context);
     String fullName = scope + name.getIdentifier();
     fullName = fullName.replace('.', '#');
     obj.put("sym", fullName);
@@ -157,7 +361,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     if (n.isNestedType()) {
       outputSourceAndTarget(n, n.getName());
     } else {
-      outputSourceAndTarget(n, n.getName(), a);
+      outputSource(n, n.getName(), a);
+      outputTarget(n, n.getName(), "", "");
     }
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
@@ -205,7 +410,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope, context);
+    outputSource(n, n.getName(), scope);
+    outputTarget(n, n.getName(), scope, context);
 
     super.visit(n, a);
   }
@@ -224,9 +430,11 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope, context);
+    outputSource(n, n.getName(), scope);
+    outputTarget(n, n.getName(), scope, context);
     if (scope.length() > 0) {
-      outputSourceAndTarget(n, n.getName(), "", context);
+      outputSource(n, n.getName(), "");
+      outputTarget(n, n.getName(), "", context);
     }
 
     super.visit(n, a);
@@ -251,14 +459,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
     }
 
-    outputSourceAndTarget(n, n.getName(), scope, context);
+    outputSource(n, n.getName(), scope);
+    outputTarget(n, n.getName(), scope, context);
 
     super.visit(n, a);
   }
 
   @Override
   public void visit(FieldAccessExpr n, String a) {
-    // XXX must implement
+    // outputSource(n, n.getName(), "");
+    // outputTarget(n, n.getName(), "", "");
     super.visit(n, a);
   }
 }
