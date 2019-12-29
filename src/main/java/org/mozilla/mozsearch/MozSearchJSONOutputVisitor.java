@@ -10,6 +10,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -316,14 +317,30 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope, context);
+    if (scope.length() > 0) {
+      outputSource(n, n.getName(), "");
+      outputTarget(n, n.getName(), "", context);
+    }
 
     super.visit(n, a);
   }
 
   @Override
   public void visit(FieldAccessExpr n, String a) {
-    // outputSource(n, n.getName(), "");
-    // outputTarget(n, n.getName(), "", "");
+    String scope = "";
+
+    try {
+      ResolvedFieldDeclaration decl = n.resolve().asField();
+      scope = decl.declaringType().getClassName() + ".";
+    } catch (Exception e) {
+    }
+
+    outputSource(n, n.getName(), scope);
+    outputTarget(n, n.getName(), scope, "");
+    if (scope.length() > 0) {
+      outputSource(n, n.getName(), "");
+      outputTarget(n, n.getName(), "", "");
+    }
     super.visit(n, a);
   }
 }
