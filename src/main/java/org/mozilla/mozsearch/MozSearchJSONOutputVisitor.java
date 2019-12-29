@@ -121,28 +121,6 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final Node n, final SimpleName name) {
-    outputSource(n, name, "");
-  }
-
-  private void outputSource(final Node n, final SimpleName name, final String scope) {
-    MozSearchJSONObject obj = new MozSearchJSONObject();
-    obj.addSourceLine(name);
-    obj.put("syntax", "use").put("pretty", scope + name.getIdentifier());
-    String fullName = scope + name.getIdentifier();
-    obj.put("sym", fullName.replace('.', '#'));
-
-    outputJSON(obj);
-  }
-
-  private void outputTarget(final Node n, final SimpleName name) {
-    outputTarget(n, name, "");
-  }
-
-  private void outputTarget(final Node n, final SimpleName name, final String scope) {
-    outputTarget(n, name, scope, "");
-  }
-
   private void outputTarget(
       final ClassOrInterfaceDeclaration n,
       final SimpleName name,
@@ -159,6 +137,20 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
   private void outputTarget(
       final ClassOrInterfaceType n,
+      final SimpleName name,
+      final String scope,
+      final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.put("sym", fullName.replace('.', '#'));
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final ConstructorDeclaration n,
       final SimpleName name,
       final String scope,
       final String context) {
@@ -215,48 +207,23 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final Node n, final SimpleName name, final String scope, final String context) {
-    MozSearchJSONObject obj = new MozSearchJSONObject();
-    obj.addTargetLine(name);
-    obj.put("kind", "use").put("pretty", name.getIdentifier()).put("context", context);
-    String fullName = scope + name.getIdentifier();
-    fullName = fullName.replace('.', '#');
-    obj.put("sym", fullName);
-
-    outputJSON(obj);
-  }
-
-  private void outputSourceAndTarget(
-      final Node n, final SimpleName name, final String scope, final String context) {
-    outputSource(n, name, scope);
-    outputTarget(n, name, scope, context);
-  }
-
-  private void outputSourceAndTarget(final Node n, final SimpleName name, final String scope) {
-    outputSource(n, name, scope);
-    outputTarget(n, name, scope);
-  }
-
-  private void outputSourceAndTarget(final Node n, final SimpleName name) {
-    outputSource(n, name);
-    outputTarget(n, name);
-  }
-
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     if (n.isNestedType()) {
-      outputSourceAndTarget(n, n.getName());
+      outputSource(n, n.getName(), "");
+      outputTarget(n, n.getName(), "", "");
     } else {
       outputSource(n, n.getName(), a);
       outputTarget(n, n.getName(), "", "");
     }
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
-      outputSourceAndTarget(classType, classType.getName());
+      outputSource(classType, classType.getName(), "");
+      outputTarget(classType, classType.getName(), "", "");
     }
     for (ClassOrInterfaceType classType : n.getImplementedTypes()) {
-      outputSourceAndTarget(classType, classType.getName());
+      outputSource(classType, classType.getName(), "");
+      outputTarget(classType, classType.getName(), "", "");
     }
     super.visit(n, a);
   }
@@ -277,7 +244,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     }
 
     if (scope.length() > 0) {
-      outputSourceAndTarget(n, n.getName(), scope, context);
+      outputSource(n, n.getName(), scope);
+      outputTarget(n, n.getName(), scope, context);
     }
 
     super.visit(n, a);
