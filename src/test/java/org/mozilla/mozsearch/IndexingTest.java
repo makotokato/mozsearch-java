@@ -26,9 +26,14 @@ public class IndexingTest extends TestCase {
     JavaIndexer indexer =
         new JavaIndexer(Paths.get("./src/test/resources/data"), Paths.get("/tmp"));
     indexer.outputIndexes();
-    byte[] f1 = Files.readAllBytes(Paths.get("/tmp/hello.java"));
-    byte[] f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/hello.java.out"));
+    byte[] f1 = Files.readAllBytes(Paths.get("/tmp/HelloWorld.java"));
+    byte[] f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/HelloWorld.java.out"));
     assertTrue(f1.length == f2.length);
-    Files.delete(Paths.get("/tmp/hello.java"));
+    Files.delete(Paths.get("/tmp/HelloWorld.java"));
+
+    f1 = Files.readAllBytes(Paths.get("/tmp/InnerClass.java"));
+    f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/InnerClass.java.out"));
+    assertTrue(f1.length == f2.length);
+    Files.delete(Paths.get("/tmp/InnerClass.java"));
   }
 }

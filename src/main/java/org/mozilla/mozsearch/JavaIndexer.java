@@ -2,7 +2,6 @@ package org.mozilla.mozsearch;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
@@ -14,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JavaIndexer {
@@ -91,13 +89,17 @@ public class JavaIndexer {
     StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
 
     for (Path file : files) {
+      Path output =
+          Paths.get(
+              outputDir.toString(), file.toString().substring(srcDir.toString().length() + 1));
       try {
-        makeIndex(
-            file,
-            Paths.get(
-                outputDir.toString(), file.toString().substring(srcDir.toString().length() + 1)));
+        makeIndex(file, output);
       } catch (Exception exception) {
         System.err.println(exception);
+        try {
+          Files.delete(output);
+        } catch (IOException ioexception) {
+        }
       }
     }
 
@@ -108,16 +110,11 @@ public class JavaIndexer {
     if (!file.toString().endsWith(".java")) {
       return;
     }
+    System.out.println("Processing " + file.toString() + " ");
+
     final CompilationUnit unit = StaticJavaParser.parse(file);
 
-    String packagename = "";
-    Optional<PackageDeclaration> p = unit.getPackageDeclaration();
-    if (p.isPresent()) {
-      packagename = p.get().getName().toString() + ".";
-    }
-
-    System.out.println("Processing " + file.toString() + " ");
     MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(outputPath);
-    unit.accept(visitor, packagename);
+    unit.accept(visitor, null);
   }
 }

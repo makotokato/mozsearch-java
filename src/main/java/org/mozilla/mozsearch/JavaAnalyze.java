@@ -2,10 +2,10 @@ package org.mozilla.mozsearch;
 
 import java.nio.file.Paths;
 
-public class JavaCodeAnalyzer {
+public class JavaAnalyze {
   public static void main(String[] args) {
     if (args.length != 2) {
-      System.err.println("Usage: JavaCodeAnalyzer <source path> <destination path>");
+      System.err.println("Usage: JavaAnalyze <source path> <destination path>");
       System.exit(-1);
     }
 

@@ -6,6 +6,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.json.JSONObject;
@@ -30,6 +32,11 @@ public class MozSearchJSONObject extends JSONObject {
   public MozSearchJSONObject addTargetLine(final SimpleName name) {
     put("loc", name.getBegin().get().line + ":" + (name.getBegin().get().column - 1))
         .put("target", 1);
+    return this;
+  }
+
+  public MozSearchJSONObject addSymbol(final String symbolName) {
+    put("sym", symbolName.replace('.', '#'));
     return this;
   }
 
@@ -59,15 +66,35 @@ public class MozSearchJSONObject extends JSONObject {
 
   public JSONObject addSource(
       final VariableDeclarator n, final SimpleName name, final String scope) {
-    return put("syntax", "def").put("pretty", "field " + scope + name.getIdentifier());
+    if (scope.length() > 0) {
+      return put("syntax", "def,variable").put("pretty", "member " + scope + name.getIdentifier());
+    }
+    return put("syntax", "def,variable")
+        .put("pretty", "variable " + scope + name.getIdentifier())
+        .put("no_crossref", 1);
   }
 
   public JSONObject addSource(final MethodCallExpr n, final SimpleName name, final String scope) {
     return put("syntax", "use,function").put("pretty", "method " + scope + name.getIdentifier());
   }
 
+  public JSONObject addSource(
+      final ObjectCreationExpr n, final SimpleName name, final String scope) {
+    return put("syntax", "use,function")
+        .put("pretty", "constructor " + scope + name.getIdentifier());
+  }
+
   public JSONObject addSource(final FieldAccessExpr n, final SimpleName name, final String scope) {
-    return put("syntax", "use,variable").put("pretty", "field " + scope + name.getIdentifier());
+    return put("syntax", "use").put("pretty", "member " + scope + name.getIdentifier());
+  }
+
+  public JSONObject addSource(final NameExpr n, final SimpleName name, final String scope) {
+    if (scope.length() > 0) {
+      return put("syntax", "use,variable").put("pretty", "member " + scope + name.getIdentifier());
+    }
+    return put("syntax", "uselocal,variable")
+        .put("pretty", "variable " + scope + name.getIdentifier())
+        .put("no_crossref", 1);
   }
 
   public JSONObject addTarget(
@@ -101,7 +128,7 @@ public class MozSearchJSONObject extends JSONObject {
 
   public JSONObject addTarget(
       final VariableDeclarator n, final SimpleName name, final String scope, final String context) {
-    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+    return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 
   public JSONObject addTarget(
@@ -110,7 +137,17 @@ public class MozSearchJSONObject extends JSONObject {
   }
 
   public JSONObject addTarget(
+      final ObjectCreationExpr n, final SimpleName name, final String scope, final String context) {
+    return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
       final FieldAccessExpr n, final SimpleName name, final String scope, final String context) {
+    return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
+      final NameExpr n, final SimpleName name, final String scope, final String context) {
     return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 }

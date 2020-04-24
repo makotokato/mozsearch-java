@@ -1,19 +1,22 @@
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'maven'
+
+mainClassName = 'org.mozilla.mozsearch.JavaAnalyze'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'com.github.javaparser:javaparser-symbol-solver-core:3.15.6'
+    compile 'com.github.javaparser:javaparser-symbol-solver-core:3.15.18'
     compile 'org.json:json:20190722'
     testCompile 'junit:junit:3.8.1'
 }
 
 group = 'org.mozilla.mozsearch'
 version = '0.1'
-description = 'mozsearch-java'
+description = 'Java Analyzer for mozsearch'
 sourceCompatibility = '1.8'
 
 allprojects {
@@ -22,19 +25,6 @@ allprojects {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
         }
     }
-}
-
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'org.mozilla.mozsearch.JavaCodeAnalyzer'
-    }
-    baseName = project.name + '-all-deps'
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    with jar
 }
 
 test {
