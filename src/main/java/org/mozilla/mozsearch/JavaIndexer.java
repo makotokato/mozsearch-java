@@ -9,6 +9,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class JavaIndexer {
     ArrayList<Path> javaFiles = new ArrayList<Path>();
     List<Path> files = Files.list(currentDir).collect(Collectors.toList());
     for (Path file : files) {
-      if (Files.isDirectory(file)) {
+      if (Files.isDirectory(file) && !Files.isSymbolicLink(file)) {
         indexAllChildren(file, srcDir, outputDir);
       } else if (file.toString().endsWith(".java")) {
         javaFiles.add(file);
@@ -66,7 +67,9 @@ public class JavaIndexer {
     String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
       try {
-        solver.add(new JarTypeSolver(sdkroot + "/platforms/android-28/android.jar"));
+        Path sdkrootPath = Paths.get(sdkroot, "platforms", "android-28", "android.jar");
+        solver.add(new JarTypeSolver(sdkrootPath));
+      } catch (InvalidPathException exception) {
       } catch (IOException exception) {
       }
     }
