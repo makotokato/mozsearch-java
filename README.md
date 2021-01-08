@@ -5,10 +5,15 @@
 java -jar mozsearch-java-all.jar <source code path> <output JSON path>
 ```
 
-## Build
+## Build with gradle
 ```
 ./gradlew build
 ./gradlew fatJar
+```
+
+## Build with bazel
+```
+bazel build //:JavaAnalyze
 ```
 
 ## Additional Information
