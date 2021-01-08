@@ -11,4 +11,3 @@ public class InnerClass {
     v.x = 2;
   }
 }
-
