@@ -3,6 +3,7 @@ package org.mozilla.mozsearch;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -65,11 +66,17 @@ public class MozSearchJSONObject extends JSONObject {
   }
 
   public JSONObject addSource(
+      final Parameter n, final SimpleName name, final String scope) {
+    return put("syntax", "use,variable").put("pretty", "parameter " + scope + name.getIdentifier()).put("no_crossref", 1);
+  }
+
+  public JSONObject addSource(
       final VariableDeclarator n, final SimpleName name, final String scope) {
     if (scope.length() > 0) {
       return put("syntax", "def,variable").put("pretty", "member " + scope + name.getIdentifier());
     }
-    return put("syntax", "def,variable")
+    // local variable
+    return put("syntax", "use,variable")
         .put("pretty", "variable " + scope + name.getIdentifier())
         .put("no_crossref", 1);
   }
@@ -128,7 +135,7 @@ public class MozSearchJSONObject extends JSONObject {
 
   public JSONObject addTarget(
       final VariableDeclarator n, final SimpleName name, final String scope, final String context) {
-    return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 
   public JSONObject addTarget(
@@ -149,5 +156,10 @@ public class MozSearchJSONObject extends JSONObject {
   public JSONObject addTarget(
       final NameExpr n, final SimpleName name, final String scope, final String context) {
     return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
+      final Parameter n, final SimpleName name, final String scope, final String context) {
+    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 }

@@ -1,9 +1,11 @@
 package org.mozilla.mozsearch;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -11,6 +13,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
@@ -163,6 +166,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputSource(final Parameter n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
   private void outputSource(final NameExpr n, final SimpleName name, final String scope) {
     final String fullName = scope + name.getIdentifier();
 
@@ -281,6 +294,17 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputTarget(
+      final Parameter n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     String scope = "";
@@ -369,8 +393,17 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope, context);
+    // output method name only too
+    if (scope.length() > 0) {
+      outputSource(n, n.getName(), "");
+      outputTarget(n, n.getName(), "", context);
+    }
 
-    // TODO: output parameters
+    // TODO: output type of parameters
+    for (Parameter parameter : n.getParameters()) {
+      outputSource(parameter, parameter.getName(), "");
+      outputTarget(parameter, parameter.getName(), "", context);
+    }
 
     super.visit(n, a);
   }
