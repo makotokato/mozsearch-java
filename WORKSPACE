@@ -14,12 +14,13 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
-        "com.github.javaparser:javaparser-core:3.16.3",
-        "com.github.javaparser:javaparser-symbol-solver-core:3.16.3",
+        "com.github.javaparser:javaparser-core:3.20.2",
+        "com.github.javaparser:javaparser-symbol-solver-core:3.20.2",
         "org.json:json:20190722",
         "junit:junit:3.8.1",
     ],
     repositories = [
         "https://jcenter.bintray.com/",
+        "https://repo1.maven.org/maven2",
     ],
 )
