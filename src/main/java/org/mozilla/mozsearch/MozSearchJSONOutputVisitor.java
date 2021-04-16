@@ -12,6 +12,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
@@ -175,6 +176,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputSource(final ReferenceType n, final SimpleName name, final String scope) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
   private void outputSource(final NameExpr n, final SimpleName name, final String scope) {
     final String fullName = scope + name.getIdentifier();
 
@@ -295,6 +306,17 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
   private void outputTarget(
       final Parameter n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final ReferenceType n, final SimpleName name, final String scope, final String context) {
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();

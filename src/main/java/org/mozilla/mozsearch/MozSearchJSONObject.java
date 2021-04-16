@@ -11,6 +11,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.ReferenceType;
 import org.json.JSONObject;
 
 public class MozSearchJSONObject extends JSONObject {
@@ -52,6 +53,11 @@ public class MozSearchJSONObject extends JSONObject {
   public JSONObject addSource(
       final ClassOrInterfaceType n, final SimpleName name, final String scope) {
     return put("syntax", "type,use").put("pretty", "class " + scope + name.getIdentifier());
+  }
+
+  public JSONObject addSource(final ReferenceType n, final SimpleName name, final String scope) {
+    return put("syntax", "type,use")
+        .put("pretty", "class/interface/enum " + scope + name.getIdentifier());
   }
 
   public JSONObject addSource(
@@ -118,6 +124,11 @@ public class MozSearchJSONObject extends JSONObject {
       final SimpleName name,
       final String scope,
       final String context) {
+    return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
+      final ReferenceType n, final SimpleName name, final String scope, final String context) {
     return put("kind", "use").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 
