@@ -1,7 +1,6 @@
 package org.mozilla.mozsearch;
 
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -351,6 +350,12 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, n.getName(), scope, context);
 
     // TODO: output type
+    final Type type = n.getType();
+    if (type.isClassOrInterfaceType()) {
+      final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
+      outputSource(classType, classType.getName(), "");
+      outputTarget(classType, classType.getName(), "", "");
+    }
 
     super.visit(n, a);
   }
@@ -371,7 +376,11 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope, context);
 
-    // TODO: output parameter
+    // TODO: output type of parameters
+    for (Parameter parameter : n.getParameters()) {
+      outputSource(parameter, parameter.getName(), "");
+      outputTarget(parameter, parameter.getName(), "", context);
+    }
 
     super.visit(n, a);
   }
