@@ -65,9 +65,10 @@ public class MozSearchJSONObject extends JSONObject {
     return put("syntax", "def,function").put("pretty", "method " + scope + name.getIdentifier());
   }
 
-  public JSONObject addSource(
-      final Parameter n, final SimpleName name, final String scope) {
-    return put("syntax", "use,variable").put("pretty", "parameter " + scope + name.getIdentifier()).put("no_crossref", 1);
+  public JSONObject addSource(final Parameter n, final SimpleName name, final String scope) {
+    return put("syntax", "use,variable")
+        .put("pretty", "parameter " + scope + name.getIdentifier())
+        .put("no_crossref", 1);
   }
 
   public JSONObject addSource(
