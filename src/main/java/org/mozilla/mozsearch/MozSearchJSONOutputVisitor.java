@@ -134,7 +134,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final VariableDeclarator n, final SimpleName name, final String scope, boolean isVariable) {
+  private void outputSource(
+      final VariableDeclarator n, final SimpleName name, final String scope, boolean isVariable) {
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -372,17 +373,17 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     boolean isVariable = false;
 
     if (!isLongTask()) {
-    try {
-      final ResolvedValueDeclaration decl = n.resolve();
-      isVariable = decl.isVariable();
-      if (decl.isField()) {
-        final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
-        scope = typeDecl.getQualifiedName() + ".";
-        context = typeDecl.getQualifiedName();
+      try {
+        final ResolvedValueDeclaration decl = n.resolve();
+        isVariable = decl.isVariable();
+        if (decl.isField()) {
+          final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
+          scope = typeDecl.getQualifiedName() + ".";
+          context = typeDecl.getQualifiedName();
+        }
+      } catch (Exception e) {
+        // not resolved
       }
-    } catch (Exception e) {
-      // not resolved
-    }
     }
 
     outputSource(n, n.getName(), scope, isVariable);
