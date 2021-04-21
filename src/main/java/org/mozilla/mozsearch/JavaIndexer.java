@@ -19,15 +19,10 @@ import java.util.stream.Collectors;
 public class JavaIndexer {
   private Path mSourceDir;
   private Path mOutputDir;
-  private Path[] mRootPaths;
 
   public JavaIndexer(final Path sourceDir, final Path outputDir) {
     mSourceDir = sourceDir;
     mOutputDir = outputDir;
-  }
-
-  public void addRootPaths(final Path[] rootPaths) {
-    mRootPaths = rootPaths;
   }
 
   public void outputIndexes() {
@@ -67,16 +62,10 @@ public class JavaIndexer {
     String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
       try {
-        Path sdkrootPath = Paths.get(sdkroot, "platforms", "android-28", "android.jar");
+        Path sdkrootPath = Paths.get(sdkroot, "platforms", "android-30", "android.jar");
         solver.add(new JarTypeSolver(sdkrootPath));
       } catch (InvalidPathException exception) {
       } catch (IOException exception) {
-      }
-    }
-
-    if (mRootPaths != null) {
-      for (Path path : mRootPaths) {
-        solver.add(new JavaParserTypeSolver(path.toString()));
       }
     }
 
