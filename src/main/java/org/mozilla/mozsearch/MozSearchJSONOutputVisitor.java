@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   private Path mOutputPath;
+  private long mStart;
 
   public MozSearchJSONOutputVisitor(final Path output) {
     mOutputPath = output;
@@ -42,6 +43,13 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
         System.err.println(exception);
       }
     }
+    mStart = System.currentTimeMillis();
+  }
+
+  // Resolving type spends more time, so when execute time is too long,
+  // we don't resolve type for fields. But declare will be resolved if possible.
+  private boolean isLongTask() {
+    return (System.currentTimeMillis() - mStart) > 1000 * 60; // 1min
   }
 
   private static String getScope(final String fullName, final SimpleName name) {
@@ -126,11 +134,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final VariableDeclarator n, final SimpleName name, final String scope) {
+  private void outputSource(final VariableDeclarator n, final SimpleName name, final String scope, boolean isVariable) {
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
     obj.addSourceLine(name).addSource(n, name, scope);
+    if (isVariable) {
+      obj.put("no_crossref", 1);
+    }
     obj.addSymbol(fullName);
 
     outputJSON(obj);
@@ -326,6 +337,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  // Declarations
+
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     String scope = "";
@@ -356,9 +369,12 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(VariableDeclarator n, String a) {
     String scope = "";
     String context = "";
+    boolean isVariable = false;
 
+    if (!isLongTask()) {
     try {
       final ResolvedValueDeclaration decl = n.resolve();
+      isVariable = decl.isVariable();
       if (decl.isField()) {
         final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
         scope = typeDecl.getQualifiedName() + ".";
@@ -367,8 +383,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     } catch (Exception e) {
       // not resolved
     }
+    }
 
-    outputSource(n, n.getName(), scope);
+    outputSource(n, n.getName(), scope, isVariable);
     outputTarget(n, n.getName(), scope, context);
 
     // TODO: output type
@@ -387,6 +404,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String scope = "";
     String context = "";
 
+    // Even if this analyze is too long, we resolve this.
     try {
       ResolvedReferenceTypeDeclaration decl = n.resolve().declaringType();
       scope = decl.getQualifiedName() + ".";
@@ -412,8 +430,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String scope = "";
     String context = "";
 
+    // Even if this analyze is too long, we resolve this.
     try {
-      ResolvedMethodDeclaration decl = n.resolve();
+      final ResolvedMethodDeclaration decl = n.resolve();
       scope = getScope(decl.getQualifiedName(), n.getName());
       if (scope.length() > 0) {
         context = scope.substring(0, scope.length() - 1);
@@ -443,11 +462,13 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(MethodCallExpr n, String a) {
     String scope = "";
 
-    try {
-      final ResolvedMethodDeclaration decl = n.resolve();
-      scope = getScope(decl.getQualifiedName(), n.getName());
-    } catch (Exception e) {
-      // not resolved.
+    if (!isLongTask()) {
+      try {
+        final ResolvedMethodDeclaration decl = n.resolve();
+        scope = getScope(decl.getQualifiedName(), n.getName());
+      } catch (Exception e) {
+        // not resolved.
+      }
     }
 
     final String context = getContext(n);
@@ -462,14 +483,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(NameExpr n, String a) {
     String scope = "";
 
-    try {
-      final ResolvedValueDeclaration decl = n.resolve();
-      if (decl.isField()) {
-        final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
-        scope = typeDecl.getQualifiedName() + ".";
+    if (!isLongTask()) {
+      try {
+        final ResolvedValueDeclaration decl = n.resolve();
+        if (decl.isField()) {
+          final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
+          scope = typeDecl.getQualifiedName() + ".";
+        }
+      } catch (Exception e) {
+        // not resolved
       }
-    } catch (Exception e) {
-      // not resolved
     }
 
     final String context = getContext(n);
@@ -484,11 +507,13 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(ObjectCreationExpr n, String a) {
     String scope = "";
 
-    try {
-      final ResolvedConstructorDeclaration decl = n.resolve();
-      scope = getScope(decl.getQualifiedName(), n.getType().getName());
-    } catch (Exception e) {
-      // not resolved
+    if (!isLongTask()) {
+      try {
+        final ResolvedConstructorDeclaration decl = n.resolve();
+        scope = getScope(decl.getQualifiedName(), n.getType().getName());
+      } catch (Exception e) {
+        // not resolved
+      }
     }
 
     final String context = getContext(n);
@@ -503,12 +528,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(FieldAccessExpr n, String a) {
     String scope = "";
 
-    try {
-      final ResolvedFieldDeclaration decl = n.resolve().asField();
-      final ResolvedTypeDeclaration typeDecl = decl.declaringType();
-      scope = typeDecl.getQualifiedName() + ".";
-    } catch (Exception e) {
-      // not resolved
+    if (!isLongTask()) {
+      try {
+        final ResolvedFieldDeclaration decl = n.resolve().asField();
+        final ResolvedTypeDeclaration typeDecl = decl.declaringType();
+        scope = typeDecl.getQualifiedName() + ".";
+      } catch (Exception e) {
+        // not resolved
+      }
     }
 
     final String context = getContext(n);
