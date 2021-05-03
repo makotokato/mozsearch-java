@@ -137,8 +137,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     }
   }
 
-  private void outputSource(
-      final ClassOrInterfaceDeclaration n, final SimpleName name, final String scope) {
+  private void outputSource(final ClassOrInterfaceDeclaration n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -169,8 +169,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(
-      final ConstructorDeclaration n, final SimpleName name, final String scope) {
+  private void outputSource(final ConstructorDeclaration n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -191,8 +191,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(
-      final VariableDeclarator n, final SimpleName name, final String scope, boolean isVariable) {
+  private void outputSource(final VariableDeclarator n, final String scope, boolean isVariable) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -235,7 +235,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final MethodCallExpr n, final SimpleName name, final String scope) {
+  private void outputSource(final MethodCallExpr n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -245,7 +246,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final FieldAccessExpr n, final SimpleName name, final String scope) {
+  private void outputSource(final FieldAccessExpr n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -276,7 +278,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final NameExpr n, final SimpleName name, final String scope) {
+  private void outputSource(final NameExpr n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -287,10 +290,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   private void outputTarget(
-      final ClassOrInterfaceDeclaration n,
-      final SimpleName name,
-      final String scope,
-      final String context) {
+      final ClassOrInterfaceDeclaration n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -323,10 +324,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   private void outputTarget(
-      final ConstructorDeclaration n,
-      final SimpleName name,
-      final String scope,
-      final String context) {
+      final ConstructorDeclaration n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -336,8 +335,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final VariableDeclarator n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final VariableDeclarator n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -392,8 +391,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final MethodCallExpr n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final MethodCallExpr n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -403,8 +402,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final FieldAccessExpr n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final FieldAccessExpr n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -414,8 +413,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final NameExpr n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final NameExpr n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -454,13 +453,13 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String scope = "";
 
     try {
-      ResolvedReferenceTypeDeclaration decl = n.resolve();
+      final ResolvedReferenceTypeDeclaration decl = n.resolve();
       scope = getScope(decl.getQualifiedName(), n.getName());
     } catch (Exception e) {
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, "");
+    outputSource(n, scope);
+    outputTarget(n, scope, "");
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
       // TODO: must resolve
@@ -497,8 +496,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       }
     }
 
-    outputSource(n, n.getName(), scope, isVariable);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope, isVariable);
+    outputTarget(n, scope, context);
 
     Type type = n.getType();
     final String typeScope = getScopeOfType(type, resolvedType);
@@ -520,7 +519,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String context = "";
 
     try {
-      ResolvedEnumDeclaration decl = n.resolve();
+      final ResolvedEnumDeclaration decl = n.resolve();
       scope = getScope(decl.getQualifiedName(), n.getName());
       if (scope.length() > 0) {
         context = scope.substring(0, scope.length() - 1);
@@ -551,15 +550,15 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     // Even if this analyze is too long, we resolve this.
     try {
-      ResolvedReferenceTypeDeclaration decl = n.resolve().declaringType();
+      final ResolvedReferenceTypeDeclaration decl = n.resolve().declaringType();
       scope = decl.getQualifiedName() + ".";
       context = decl.getQualifiedName();
     } catch (Exception e) {
       // not resolved
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
 
     for (Parameter parameter : n.getParameters()) {
       final Type type = parameter.getType();
@@ -641,8 +640,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     final String context = getContext(n);
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
 
     super.visit(n, a);
   }
@@ -665,8 +664,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     final String context = getContext(n);
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
 
     super.visit(n, a);
   }
@@ -708,8 +707,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     final String context = getContext(n);
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
 
     super.visit(n, a);
   }
