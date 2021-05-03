@@ -2,6 +2,7 @@ package org.mozilla.mozsearch;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
@@ -9,7 +10,6 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -51,6 +51,25 @@ public class JavaIndexer {
     makeIndexes(javaFiles, srcDir, outputDir);
   }
 
+  private static Path getImportJavaFile(
+      final Path file, final String importName, final String packageName) {
+    if (importName.startsWith("java.")) {
+      return null;
+    }
+
+    String path = packageName;
+    Path root = file.getParent().getParent();
+    while (path.contains(".")) {
+      root = root.getParent();
+      path = path.substring(0, path.lastIndexOf(".") - 1);
+    }
+    final Path importFile = Paths.get(root.toString(), importName.replace(".", "/") + ".java");
+    if (Files.exists(importFile)) {
+      return importFile;
+    }
+    return null;
+  }
+
   private void makeIndexes(final List<Path> files, final Path srcDir, final Path outputDir) {
     if (files.isEmpty()) {
       return;
@@ -58,27 +77,50 @@ public class JavaIndexer {
 
     final CombinedTypeSolver solver = new CombinedTypeSolver();
     solver.add(new ReflectionTypeSolver());
+
+    // This is cached dir list not to add duplicated entry
+    final ArrayList<Path> dirs = new ArrayList<Path>();
+
+    // Add dir from import syntax.
+    StaticJavaParser.getConfiguration().setSymbolResolver(null);
+    for (Path file : files) {
+      try {
+        final CompilationUnit unit = StaticJavaParser.parse(file);
+        if (unit.getPackageDeclaration().isPresent()) {
+          final String packageName = unit.getPackageDeclaration().get().getName().toString();
+          for (ImportDeclaration item : unit.getImports()) {
+            final Path importFile = getImportJavaFile(file, item.getName().toString(), packageName);
+            if (importFile != null) {
+              try {
+                if (!dirs.contains(importFile.getParent())) {
+                  solver.add(new JavaParserTypeSolver(importFile.getParent()));
+                  dirs.add(importFile.getParent());
+                }
+              } catch (Exception exception) {
+              }
+            }
+          }
+        }
+      } catch (Exception exception) {
+      }
+
+      if (!dirs.contains(file.getParent())) {
+        solver.add(new JavaParserTypeSolver(file.getParent()));
+        dirs.add(file.getParent());
+      }
+    }
+
     // Set Android SDK's JAR using ANDROID_SDK_ROOT
     String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
       try {
         Path sdkrootPath = Paths.get(sdkroot, "platforms", "android-30", "android.jar");
         solver.add(new JarTypeSolver(sdkrootPath));
-      } catch (InvalidPathException exception) {
-      } catch (IOException exception) {
+      } catch (Exception exception) {
       }
     }
 
-    ArrayList<Path> dirs = new ArrayList<Path>();
-    for (Path file : files) {
-      if (!dirs.contains(file.getParent())) {
-        solver.add(new JavaParserTypeSolver(file.getParent().toFile()));
-        dirs.add(file.getParent());
-      }
-    }
-
-    final JavaSymbolSolver symbolSolver = new JavaSymbolSolver(solver);
-    StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
+    StaticJavaParser.getConfiguration().setSymbolResolver(new JavaSymbolSolver(solver));
 
     for (Path file : files) {
       Path output =
