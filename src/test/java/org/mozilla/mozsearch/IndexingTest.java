@@ -35,5 +35,10 @@ public class IndexingTest extends TestCase {
     f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/InnerClass.java.out"));
     assertTrue(f1.length == f2.length);
     Files.delete(Paths.get("/tmp/InnerClass.java"));
+
+    f1 = Files.readAllBytes(Paths.get("/tmp/Generics.java"));
+    f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/Generics.java.out"));
+    assertTrue(f1.length == f2.length);
+    Files.delete(Paths.get("/tmp/Generics.java"));
   }
 }
