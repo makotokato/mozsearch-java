@@ -92,6 +92,17 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     return "";
   }
 
+  private String getScopeOfType(final Type type, final ResolvedReferenceType resolvedType) {
+    if (resolvedType == null) {
+      return "";
+    }
+    if (!type.isClassOrInterfaceType()) {
+      return "";
+    }
+
+    return getScope(resolvedType.getQualifiedName(), type.asClassOrInterfaceType().getName());
+  }
+
   private static String getContext(final Node n) {
     try {
       Optional<Node> parent = n.getParentNode();
@@ -427,6 +438,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String scope = "";
     String context = "";
     boolean isVariable = false;
+    ResolvedReferenceType resolvedType = null;
 
     if (!isLongTask()) {
       try {
@@ -437,6 +449,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
           scope = typeDecl.getQualifiedName() + ".";
           context = typeDecl.getQualifiedName();
         }
+        if (decl.getType().isReferenceType()) {
+          resolvedType = decl.getType().asReferenceType();
+        }
       } catch (Exception e) {
         // not resolved
       }
@@ -446,9 +461,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, n.getName(), scope, context);
 
     final Type type = n.getType();
-    // TODO: resolve type
-    outputSource(type, "");
-    outputTarget(type, "", "");
+    final String typeScope = getScopeOfType(type, resolvedType);
+    outputSource(type, typeScope);
+    outputTarget(type, typeScope, context);
 
     super.visit(n, a);
   }
@@ -524,13 +539,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     // Output return type
     final Type type = n.getType();
-    String typeScope = "";
-    if (resolvedType != null) {
-      if (type.isClassOrInterfaceType()) {
-        final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
-        typeScope = getScope(resolvedType.getQualifiedName(), classType.getName());
-      }
-    }
+    final String typeScope = getScopeOfType(type, resolvedType);
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
 

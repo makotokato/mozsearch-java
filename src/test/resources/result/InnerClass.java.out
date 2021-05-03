@@ -22,8 +22,8 @@
 {"loc":"9:27","pretty":"InnerClass.InnerClass","kind":"use","sym":"InnerClass#InnerClass","context":"InnerClass.main","target":1}
 {"no_crossref":1,"loc":"10:21-22","pretty":"variable v","sym":"v","syntax":"use,variable","source":1}
 {"loc":"10:21","pretty":"v","kind":"def","sym":"v","context":"","target":1}
-{"loc":"10:15-20","pretty":"class First","sym":"First","syntax":"type,use","source":1}
-{"loc":"10:15","pretty":"First","kind":"use","sym":"First","context":"","target":1}
+{"loc":"10:15-20","pretty":"class InnerClass.First","sym":"InnerClass#First","syntax":"type,use","source":1}
+{"loc":"10:15","pretty":"InnerClass.First","kind":"use","sym":"InnerClass#First","context":"","target":1}
 {"loc":"10:35-40","pretty":"constructor InnerClass.First.First","sym":"InnerClass#First#First","syntax":"use,function","source":1}
 {"loc":"10:35","pretty":"InnerClass.First.First","kind":"use","sym":"InnerClass#First#First","context":"InnerClass.main","target":1}
 {"no_crossref":1,"loc":"10:25-30","pretty":"variable first","sym":"first","syntax":"uselocal,variable","source":1}
