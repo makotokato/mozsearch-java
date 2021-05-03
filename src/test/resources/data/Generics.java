@@ -5,8 +5,8 @@ public class Generics {
   public static void main(String[] args) {
     List<String> list = new ArrayList<String>();
     list.add("foo");
-   
-    for (String item : list){ 
+
+    for (String item : list) {
       System.out.println(item);
     }
   }
