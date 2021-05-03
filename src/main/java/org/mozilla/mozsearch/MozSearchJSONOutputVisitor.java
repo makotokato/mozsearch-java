@@ -21,11 +21,9 @@ import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclarat
 import com.github.javaparser.resolution.declarations.ResolvedEnumDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -68,42 +66,40 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   private String getScopeOfParameterType(final Parameter parameter) {
-    if (isLongTask()) {
-      return "";
-    }
-    final Type type = parameter.getType();
-    if (!type.isClassOrInterfaceType() && !type.isArrayType()) {
-      return "";
-    }
     try {
-      final ResolvedParameterDeclaration decl = parameter.resolve();
-      if (decl.getType().isReferenceType()) {
-        return getScope(
-            decl.getType().asReferenceType().getQualifiedName(),
-            type.asClassOrInterfaceType().getName());
-      } else if (decl.getType().isArray()) {
-        // TODO: support n-array.
-        final ResolvedType typeInArray = decl.getType().asArrayType().getComponentType();
-        if (typeInArray.isReferenceType()) {
-          return getScope(
-              typeInArray.asReferenceType().getQualifiedName(),
-              type.asArrayType().getComponentType().asClassOrInterfaceType().getName());
-        }
-      }
+      return getScopeOfType(parameter.getType(), parameter.resolve().getType());
     } catch (Exception e) {
+      // not resolved
     }
     return "";
   }
 
-  private String getScopeOfType(final Type type, final ResolvedReferenceType resolvedType) {
+  private String getScopeOfType(final Type type, final ResolvedType resolvedType) {
     if (resolvedType == null) {
       return "";
     }
-    if (!type.isClassOrInterfaceType()) {
-      return "";
-    }
 
-    return getScope(resolvedType.getQualifiedName(), type.asClassOrInterfaceType().getName());
+    if (type.isClassOrInterfaceType() && resolvedType.isReferenceType()) {
+      return getScope(
+          resolvedType.asReferenceType().getQualifiedName(),
+          type.asClassOrInterfaceType().getName());
+    }
+    if (type.isArrayType() && resolvedType.isArray()) {
+      return getScopeOfType(
+          type.asArrayType().getComponentType(), resolvedType.asArrayType().getComponentType());
+    }
+    return "";
+  }
+
+  private Type getClassOrInterfaceType(final Type type) {
+    Type realType = type;
+    while (!realType.isClassOrInterfaceType()) {
+      if (!realType.isArrayType()) {
+        return null;
+      }
+      realType = realType.asArrayType().getComponentType();
+    }
+    return realType;
   }
 
   private static String getContext(final Node n) {
@@ -484,7 +480,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     String scope = "";
     String context = "";
     boolean isVariable = false;
-    ResolvedReferenceType resolvedType = null;
+    ResolvedType resolvedType = null;
 
     if (!isLongTask()) {
       try {
@@ -495,9 +491,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
           scope = typeDecl.getQualifiedName() + ".";
           context = typeDecl.getQualifiedName();
         }
-        if (decl.getType().isReferenceType()) {
-          resolvedType = decl.getType().asReferenceType();
-        }
+        resolvedType = decl.getType();
       } catch (Exception e) {
         // not resolved
       }
@@ -506,8 +500,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, n.getName(), scope, isVariable);
     outputTarget(n, n.getName(), scope, context);
 
-    final Type type = n.getType();
+    Type type = n.getType();
     final String typeScope = getScopeOfType(type, resolvedType);
+    if (typeScope.length() > 0) {
+      Type realType = getClassOrInterfaceType(type);
+      if (realType != null) {
+        type = realType;
+      }
+    }
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
 
@@ -578,7 +578,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(MethodDeclaration n, String a) {
     String scope = "";
     String context = "";
-    ResolvedReferenceType resolvedType = null;
+    ResolvedType resolvedType = null;
 
     // Even if this analyze is too long, we resolve this.
     try {
@@ -587,9 +587,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       if (scope.length() > 0) {
         context = scope.substring(0, scope.length() - 1);
       }
-      if (decl.getReturnType().isReferenceType()) {
-        resolvedType = decl.getReturnType().asReferenceType();
-      }
+      resolvedType = decl.getReturnType();
     } catch (Exception e) {
       // not resolved
     }
@@ -614,8 +612,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     }
 
     // Output return type
-    final Type type = n.getType();
+    Type type = n.getType();
     final String typeScope = getScopeOfType(type, resolvedType);
+    if (typeScope.length() > 0) {
+      Type realType = getClassOrInterfaceType(type);
+      if (realType != null) {
+        type = realType;
+      }
+    }
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
 

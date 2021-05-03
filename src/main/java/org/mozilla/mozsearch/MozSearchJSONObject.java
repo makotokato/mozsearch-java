@@ -85,7 +85,8 @@ public class MozSearchJSONObject extends JSONObject {
 
   public JSONObject addSource(
       final EnumConstantDeclaration n, final SimpleName name, final String scope) {
-    return put("syntax", "def,variable").put("pretty", "enum constant " + scope + name.getIdentifier());
+    return put("syntax", "def,variable")
+        .put("pretty", "enum constant " + scope + name.getIdentifier());
   }
 
   public JSONObject addSource(
