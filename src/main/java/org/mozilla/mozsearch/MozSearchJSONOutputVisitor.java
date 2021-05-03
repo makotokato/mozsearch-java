@@ -63,6 +63,26 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     return fullName.substring(0, fullName.length() - name.toString().length());
   }
 
+  private String getScopeForParameterType(final Parameter parameter) {
+    if (isLongTask()) {
+      return "";
+    }
+    final Type type = parameter.getType();
+    if (!type.isClassOrInterfaceType()) {
+      return "";
+    }
+    try {
+      final ResolvedParameterDeclaration decl = parameter.resolve();
+      if (decl.getType().isReferenceType()) {
+        return getScope(
+            decl.getType().asReferenceType().getQualifiedName(),
+            type.asClassOrInterfaceType().getName());
+      }
+    } catch (Exception e) {
+    }
+    return "";
+  }
+
   private static String getContext(final Node n) {
     try {
       Optional<Node> parent = n.getParentNode();
@@ -436,10 +456,10 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, n.getName(), scope, context);
 
     for (Parameter parameter : n.getParameters()) {
-      // TODO: resolve type
       final Type type = parameter.getType();
-      outputSource(type, "");
-      outputTarget(type, "", context);
+      final String typeScope = getScopeForParameterType(parameter);
+      outputSource(type, typeScope);
+      outputTarget(type, typeScope, context);
 
       outputSource(parameter, "");
       outputTarget(parameter, "", context);
@@ -479,20 +499,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     // Output parameters
     for (Parameter parameter : n.getParameters()) {
       final Type type = parameter.getType();
-      String typeScope = "";
-      if (!isLongTask()) {
-        try {
-          if (type.isClassOrInterfaceType()) {
-            final ResolvedParameterDeclaration decl = parameter.resolve();
-            if (decl.getType().isReferenceType()) {
-              final ResolvedReferenceType paramType = decl.getType().asReferenceType();
-              final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
-              typeScope = getScope(paramType.getQualifiedName(), classType.getName());
-            }
-          }
-        } catch (Exception e) {
-        }
-      }
+      final String typeScope = getScopeForParameterType(parameter);
       outputSource(type, typeScope);
       outputTarget(type, typeScope, context);
 
