@@ -2,6 +2,8 @@ package org.mozilla.mozsearch;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -77,6 +79,15 @@ public class MozSearchJSONObject extends JSONObject {
         .put("no_crossref", 1);
   }
 
+  public JSONObject addSource(final EnumDeclaration n, final SimpleName name, final String scope) {
+    return put("syntax", "def,variable").put("pretty", "enum " + scope + name.getIdentifier());
+  }
+
+  public JSONObject addSource(
+      final EnumConstantDeclaration n, final SimpleName name, final String scope) {
+    return put("syntax", "def,variable").put("pretty", "variable " + scope + name.getIdentifier());
+  }
+
   public JSONObject addSource(
       final VariableDeclarator n, final SimpleName name, final String scope) {
     if (scope.length() > 0) {
@@ -139,6 +150,19 @@ public class MozSearchJSONObject extends JSONObject {
 
   public JSONObject addTarget(
       final MethodDeclaration n, final SimpleName name, final String scope, final String context) {
+    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
+      final EnumDeclaration n, final SimpleName name, final String scope, final String context) {
+    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
+  }
+
+  public JSONObject addTarget(
+      final EnumConstantDeclaration n,
+      final SimpleName name,
+      final String scope,
+      final String context) {
     return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 

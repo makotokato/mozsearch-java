@@ -3,6 +3,8 @@ package org.mozilla.mozsearch;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -16,6 +18,7 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedEnumDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
@@ -64,7 +67,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     return fullName.substring(0, fullName.length() - name.toString().length());
   }
 
-  private String getScopeForParameterType(final Parameter parameter) {
+  private String getScopeOfParameterType(final Parameter parameter) {
     if (isLongTask()) {
       return "";
     }
@@ -206,6 +209,26 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputSource(final EnumDeclaration n, final String scope) {
+    final SimpleName name = n.getName();
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.addSymbol(fullName);
+    outputJSON(obj);
+  }
+
+  private void outputSource(final EnumConstantDeclaration n, final String scope) {
+    final SimpleName name = n.getName();
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.addSymbol(fullName);
+    outputJSON(obj);
+  }
+
   private void outputSource(final ObjectCreationExpr n, final SimpleName name, final String scope) {
     final String fullName = scope + name.getIdentifier();
 
@@ -319,6 +342,29 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
   private void outputTarget(
       final VariableDeclarator n, final SimpleName name, final String scope, final String context) {
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(final EnumDeclaration n, final String scope, final String context) {
+    final SimpleName name = n.getName();
+    final String fullName = scope + name.getIdentifier();
+
+    MozSearchJSONObject obj = new MozSearchJSONObject();
+    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.addSymbol(fullName);
+
+    outputJSON(obj);
+  }
+
+  private void outputTarget(
+      final EnumConstantDeclaration n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -469,6 +515,36 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   @Override
+  public void visit(EnumDeclaration n, String a) {
+    String scope = "";
+    String context = "";
+
+    try {
+      ResolvedEnumDeclaration decl = n.resolve();
+      scope = getScope(decl.getQualifiedName(), n.getName());
+      if (scope.length() > 0) {
+        context = scope.substring(0, scope.length() - 1);
+      }
+    } catch (Exception e) {
+      // not resolved
+    }
+
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
+
+    if (scope.length() > 0) {
+      context = scope + n.getName();
+      scope = scope + n.getName() + ".";
+    }
+    for (EnumConstantDeclaration child : n.getEntries()) {
+      outputSource(child, scope);
+      outputTarget(child, scope, context);
+    }
+
+    super.visit(n, a);
+  }
+
+  @Override
   public void visit(ConstructorDeclaration n, String a) {
     String scope = "";
     String context = "";
@@ -487,7 +563,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     for (Parameter parameter : n.getParameters()) {
       final Type type = parameter.getType();
-      final String typeScope = getScopeForParameterType(parameter);
+      final String typeScope = getScopeOfParameterType(parameter);
       outputSource(type, typeScope);
       outputTarget(type, typeScope, context);
 
@@ -529,7 +605,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     // Output parameters
     for (Parameter parameter : n.getParameters()) {
       final Type type = parameter.getType();
-      final String typeScope = getScopeForParameterType(parameter);
+      final String typeScope = getScopeOfParameterType(parameter);
       outputSource(type, typeScope);
       outputTarget(type, typeScope, context);
 
