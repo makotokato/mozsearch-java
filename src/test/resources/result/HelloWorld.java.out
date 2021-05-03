@@ -4,6 +4,8 @@
 {"loc":"2:21","pretty":"HelloWord.main","kind":"def","sym":"HelloWord#main","context":"HelloWord","target":1}
 {"loc":"2:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"2:21","pretty":"main","kind":"def","sym":"main","context":"HelloWord","target":1}
+{"loc":"2:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
+{"loc":"2:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"HelloWord","target":1}
 {"no_crossref":1,"loc":"2:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
 {"loc":"2:35","pretty":"args","kind":"def","sym":"args","context":"HelloWord","target":1}
 {"loc":"3:15-22","pretty":"method java.io.PrintStream.println","sym":"java#io#PrintStream#println","syntax":"use,function","source":1}

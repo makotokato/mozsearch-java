@@ -23,6 +23,7 @@ import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclar
 import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
+import com.github.javaparser.resolution.types.ResolvedType;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -68,7 +69,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       return "";
     }
     final Type type = parameter.getType();
-    if (!type.isClassOrInterfaceType()) {
+    if (!type.isClassOrInterfaceType() && !type.isArrayType()) {
       return "";
     }
     try {
@@ -77,6 +78,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
         return getScope(
             decl.getType().asReferenceType().getQualifiedName(),
             type.asClassOrInterfaceType().getName());
+      } else if (decl.getType().isArray()) {
+        // TODO: support n-array.
+        final ResolvedType typeInArray = decl.getType().asArrayType().getComponentType();
+        if (typeInArray.isReferenceType()) {
+          return getScope(
+              typeInArray.asReferenceType().getQualifiedName(),
+              type.asArrayType().getComponentType().asClassOrInterfaceType().getName());
+        }
       }
     } catch (Exception e) {
     }
@@ -133,6 +142,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     if (n.isClassOrInterfaceType()) {
       final ClassOrInterfaceType classType = n.asClassOrInterfaceType();
       outputSource(classType, scope);
+    } else if (n.isArrayType()) {
+      final Type typeInArray = n.asArrayType().getComponentType();
+      outputSource(typeInArray, scope);
     }
   }
 
@@ -262,6 +274,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     if (n.isClassOrInterfaceType()) {
       final ClassOrInterfaceType type = n.asClassOrInterfaceType();
       outputTarget(type, scope, context);
+    } else if (n.isArrayType()) {
+      final Type typeInArray = n.asArrayType().getComponentType();
+      outputTarget(typeInArray, scope, context);
     }
   }
 

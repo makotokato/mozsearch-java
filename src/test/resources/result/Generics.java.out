@@ -4,6 +4,8 @@
 {"loc":"5:21","pretty":"Generics.main","kind":"def","sym":"Generics#main","context":"Generics","target":1}
 {"loc":"5:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"5:21","pretty":"main","kind":"def","sym":"main","context":"Generics","target":1}
+{"loc":"5:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
+{"loc":"5:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics","target":1}
 {"no_crossref":1,"loc":"5:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
 {"loc":"5:35","pretty":"args","kind":"def","sym":"args","context":"Generics","target":1}
 {"no_crossref":1,"loc":"6:17-21","pretty":"variable list","sym":"list","syntax":"use,variable","source":1}

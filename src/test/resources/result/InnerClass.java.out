@@ -10,6 +10,8 @@
 {"loc":"8:21","pretty":"InnerClass.main","kind":"def","sym":"InnerClass#main","context":"InnerClass","target":1}
 {"loc":"8:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"8:21","pretty":"main","kind":"def","sym":"main","context":"InnerClass","target":1}
+{"loc":"8:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
+{"loc":"8:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"InnerClass","target":1}
 {"no_crossref":1,"loc":"8:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
 {"loc":"8:35","pretty":"args","kind":"def","sym":"args","context":"InnerClass","target":1}
 {"no_crossref":1,"loc":"9:15-20","pretty":"variable first","sym":"first","syntax":"use,variable","source":1}
