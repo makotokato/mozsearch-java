@@ -18,9 +18,11 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
+import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   private Path mOutputPath;
   private long mStart;
+  private long mTimeout = 1000 * 60; // 1 min
 
   public MozSearchJSONOutputVisitor(final Path output) {
     mOutputPath = output;
@@ -49,7 +52,11 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   // Resolving type spends more time, so when execute time is too long,
   // we don't resolve type for fields. But declare will be resolved if possible.
   private boolean isLongTask() {
-    return (System.currentTimeMillis() - mStart) > 1000 * 60; // 1min
+    return (System.currentTimeMillis() - mStart) > mTimeout;
+  }
+
+  public void setTimeoutForResolution(long timeout) {
+    mTimeout = timeout;
   }
 
   private static String getScope(final String fullName, final SimpleName name) {
@@ -102,8 +109,15 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(
-      final ClassOrInterfaceType n, final SimpleName name, final String scope) {
+  private void outputSource(final Type n, final String scope) {
+    if (n.isClassOrInterfaceType()) {
+      final ClassOrInterfaceType classType = n.asClassOrInterfaceType();
+      outputSource(classType, scope);
+    }
+  }
+
+  private void outputSource(final ClassOrInterfaceType n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -124,7 +138,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final MethodDeclaration n, final SimpleName name, final String scope) {
+  private void outputSource(final MethodDeclaration n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -178,7 +193,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final Parameter n, final SimpleName name, final String scope) {
+  private void outputSource(final Parameter n, final String scope) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -222,11 +238,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
+  private void outputTarget(final Type n, final String scope, final String context) {
+    if (n.isClassOrInterfaceType()) {
+      final ClassOrInterfaceType type = n.asClassOrInterfaceType();
+      outputTarget(type, scope, context);
+    }
+  }
+
   private void outputTarget(
-      final ClassOrInterfaceType n,
-      final SimpleName name,
-      final String scope,
-      final String context) {
+      final ClassOrInterfaceType n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -261,8 +282,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final MethodDeclaration n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final MethodDeclaration n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -316,8 +337,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(
-      final Parameter n, final SimpleName name, final String scope, final String context) {
+  private void outputTarget(final Parameter n, final String scope, final String context) {
+    final SimpleName name = n.getName();
     final String fullName = scope + name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
@@ -354,14 +375,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, n.getName(), scope, "");
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
-      // TODO: must be resolve
-      outputSource(classType, classType.getName(), "");
-      outputTarget(classType, classType.getName(), "", "");
+      // TODO: must resolve
+      outputSource(classType, "");
+      outputTarget(classType, "", "");
     }
     for (ClassOrInterfaceType classType : n.getImplementedTypes()) {
-      // TODO: must be resolve
-      outputSource(classType, classType.getName(), "");
-      outputTarget(classType, classType.getName(), "", "");
+      // TODO: must resolve
+      outputSource(classType, "");
+      outputTarget(classType, "", "");
     }
     super.visit(n, a);
   }
@@ -389,13 +410,10 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, n.getName(), scope, isVariable);
     outputTarget(n, n.getName(), scope, context);
 
-    // TODO: output type
     final Type type = n.getType();
-    if (type.isClassOrInterfaceType()) {
-      final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
-      outputSource(classType, classType.getName(), "");
-      outputTarget(classType, classType.getName(), "", "");
-    }
+    // TODO: resolve type
+    outputSource(type, "");
+    outputTarget(type, "", "");
 
     super.visit(n, a);
   }
@@ -417,10 +435,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(n, n.getName(), scope);
     outputTarget(n, n.getName(), scope, context);
 
-    // TODO: output type of parameters
     for (Parameter parameter : n.getParameters()) {
-      outputSource(parameter, parameter.getName(), "");
-      outputTarget(parameter, parameter.getName(), "", context);
+      // TODO: resolve type
+      final Type type = parameter.getType();
+      outputSource(type, "");
+      outputTarget(type, "", context);
+
+      outputSource(parameter, "");
+      outputTarget(parameter, "", context);
     }
 
     super.visit(n, a);
@@ -430,6 +452,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   public void visit(MethodDeclaration n, String a) {
     String scope = "";
     String context = "";
+    ResolvedReferenceType resolvedType = null;
 
     // Even if this analyze is too long, we resolve this.
     try {
@@ -438,23 +461,56 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       if (scope.length() > 0) {
         context = scope.substring(0, scope.length() - 1);
       }
+      if (decl.getReturnType().isReferenceType()) {
+        resolvedType = decl.getReturnType().asReferenceType();
+      }
     } catch (Exception e) {
       // not resolved
     }
 
-    outputSource(n, n.getName(), scope);
-    outputTarget(n, n.getName(), scope, context);
+    outputSource(n, scope);
+    outputTarget(n, scope, context);
     // output method name only too
     if (scope.length() > 0) {
-      outputSource(n, n.getName(), "");
-      outputTarget(n, n.getName(), "", context);
+      outputSource(n, "");
+      outputTarget(n, "", context);
     }
 
-    // TODO: output type of parameters
+    // Output parameters
     for (Parameter parameter : n.getParameters()) {
-      outputSource(parameter, parameter.getName(), "");
-      outputTarget(parameter, parameter.getName(), "", context);
+      final Type type = parameter.getType();
+      String typeScope = "";
+      if (!isLongTask()) {
+        try {
+          if (type.isClassOrInterfaceType()) {
+            final ResolvedParameterDeclaration decl = parameter.resolve();
+            if (decl.getType().isReferenceType()) {
+              final ResolvedReferenceType paramType = decl.getType().asReferenceType();
+              final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
+              typeScope = getScope(paramType.getQualifiedName(), classType.getName());
+            }
+          }
+        } catch (Exception e) {
+        }
+      }
+      outputSource(type, typeScope);
+      outputTarget(type, typeScope, context);
+
+      outputSource(parameter, "");
+      outputTarget(parameter, "", context);
     }
+
+    // Output return type
+    final Type type = n.getType();
+    String typeScope = "";
+    if (resolvedType != null) {
+      if (type.isClassOrInterfaceType()) {
+        final ClassOrInterfaceType classType = type.asClassOrInterfaceType();
+        typeScope = getScope(resolvedType.getQualifiedName(), classType.getName());
+      }
+    }
+    outputSource(type, typeScope);
+    outputTarget(type, typeScope, context);
 
     super.visit(n, a);
   }
