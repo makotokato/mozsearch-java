@@ -1,5 +1,6 @@
 package org.mozilla.mozsearch;
 
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -14,20 +15,40 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class JavaIndexer {
   private Path mSourceDir;
   private Path mOutputDir;
+  private ExecutorService mPool;
   private int mTimeout = -1;
+  private int mThreadPoolCount = 4;
 
   public JavaIndexer(final Path sourceDir, final Path outputDir) {
     mSourceDir = sourceDir;
     mOutputDir = outputDir;
+    mPool = null;
   }
 
   public void setTimeout(int timeout) {
     mTimeout = timeout;
+  }
+
+  public void useThreadPool(boolean enabled) {
+    if (enabled) {
+      mPool = Executors.newFixedThreadPool(mThreadPoolCount);
+
+      if (Runtime.getRuntime().availableProcessors() < 4) {
+        mThreadPoolCount = 2;
+      } else {
+        mThreadPoolCount = 4;
+      }
+    } else {
+      mPool = null;
+    }
   }
 
   public void outputIndexes() {
@@ -35,6 +56,17 @@ public class JavaIndexer {
       indexAllChildren(mSourceDir, mSourceDir, mOutputDir);
     } catch (IOException exception) {
       System.err.println(exception);
+    }
+
+    if (mPool == null) {
+      return;
+    }
+
+    mPool.shutdown();
+
+    try {
+      mPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    } catch (InterruptedException exception) {
     }
   }
 
@@ -147,14 +179,20 @@ public class JavaIndexer {
         }
       }
     }
-
-    System.gc();
   }
 
-  private void makeIndex(final Path file, final Path outputPath) throws IOException {
+  private void makeIndex(final Path file, final Path outputPath)
+      throws IOException, ParseProblemException {
     if (!file.toString().endsWith(".java")) {
       return;
     }
+
+    if (mPool != null) {
+      final CompilationUnit unit = StaticJavaParser.parse(file);
+      mPool.submit(new JavaIndexerTask(unit, file, outputPath, mTimeout));
+      return;
+    }
+
     System.out.println("Processing " + file.toString() + " ");
 
     final CompilationUnit unit = StaticJavaParser.parse(file);

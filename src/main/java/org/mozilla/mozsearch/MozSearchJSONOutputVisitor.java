@@ -38,7 +38,7 @@ import org.json.JSONObject;
 public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   private Path mOutputPath;
   private long mStart;
-  private long mTimeout = 1000 * 60; // 1 min
+  private long mTimeout = 5 * 1000 * 60; // 5 min
 
   public MozSearchJSONOutputVisitor(final Path output) {
     mOutputPath = output;
@@ -65,7 +65,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
    *                Since it may spends more time to resolve object type, if
    *                elapsed time of visitor's parser is more than timeout
    *                value, we don't resolve type except to declare.
-   *                Default value is 60 second.
+   *                Default value is 5 min.
    */
   public void setTimeout(long timeout) {
     mTimeout = timeout;
