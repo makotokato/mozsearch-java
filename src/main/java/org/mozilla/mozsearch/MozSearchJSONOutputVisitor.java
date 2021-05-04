@@ -8,6 +8,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -709,6 +710,32 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     outputSource(n, scope);
     outputTarget(n, scope, context);
+
+    super.visit(n, a);
+  }
+
+  @Override
+  public void visit(CastExpr n, String a) {
+    final String context = getContext(n);
+    Type type = n.getType();
+    String scope = "";
+
+    if (!isLongTask()) {
+      try {
+        scope = getScopeOfType(type, type.resolve());
+        if (scope.length() > 0) {
+          final Type realType = getClassOrInterfaceType(type);
+          if (realType != null) {
+            type = realType;
+          }
+        }
+      } catch (Exception e) {
+        // not resolved
+      }
+    }
+
+    outputSource(type, scope);
+    outputTarget(type, scope, context);
 
     super.visit(n, a);
   }
