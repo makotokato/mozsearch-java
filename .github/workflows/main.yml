@@ -23,3 +23,7 @@ jobs:
         java-version: 1.8
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Build with bazel
+      run: bazel build //:JavaAnalyze
+    - name: Run tests with bazel
+      run: bazel test //:IndexingTest
