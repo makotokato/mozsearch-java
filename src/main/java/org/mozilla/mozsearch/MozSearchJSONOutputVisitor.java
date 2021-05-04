@@ -58,7 +58,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     return (System.currentTimeMillis() - mStart) > mTimeout;
   }
 
-  public void setTimeoutForResolution(long timeout) {
+  /*
+   * Set timeout value for visitor's parser.
+   *
+   * @Param timeout An timeout value (millisecond) for resolving type.
+   *                Since it may spends more time to resolve object type, if
+   *                elapsed time of visitor's parser is more than timeout
+   *                value, we don't resolve type except to declare.
+   *                Default value is 60 second.
+   */
+  public void setTimeout(long timeout) {
     mTimeout = timeout;
   }
 

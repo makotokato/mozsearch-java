@@ -19,10 +19,15 @@ import java.util.stream.Collectors;
 public class JavaIndexer {
   private Path mSourceDir;
   private Path mOutputDir;
+  private int mTimeout = -1;
 
   public JavaIndexer(final Path sourceDir, final Path outputDir) {
     mSourceDir = sourceDir;
     mOutputDir = outputDir;
+  }
+
+  public void setTimeout(int timeout) {
+    mTimeout = timeout;
   }
 
   public void outputIndexes() {
@@ -111,11 +116,17 @@ public class JavaIndexer {
     }
 
     // Set Android SDK's JAR using ANDROID_SDK_ROOT
-    String sdkroot = System.getenv("ANDROID_SDK_ROOT");
+    final String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
       try {
-        Path sdkrootPath = Paths.get(sdkroot, "platforms", "android-30", "android.jar");
-        solver.add(new JarTypeSolver(sdkrootPath));
+        final String[] apis = new String[] {"android-30", "android-29", "android-28"};
+        for (String api : apis) {
+          final Path sdkrootPath = Paths.get(sdkroot, "platforms", api, "android.jar");
+          if (Files.exists(sdkrootPath)) {
+            solver.add(new JarTypeSolver(sdkrootPath));
+            break;
+          }
+        }
       } catch (Exception exception) {
       }
     }
@@ -149,6 +160,9 @@ public class JavaIndexer {
     final CompilationUnit unit = StaticJavaParser.parse(file);
 
     MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(outputPath);
+    if (mTimeout > 0) {
+      visitor.setTimeout(mTimeout);
+    }
     unit.accept(visitor, null);
   }
 }
