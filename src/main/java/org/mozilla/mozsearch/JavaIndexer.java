@@ -159,7 +159,7 @@ public class JavaIndexer {
             break;
           }
         }
-      } catch (Exception exception) {
+      } catch (IOException exception) {
       }
     }
 
