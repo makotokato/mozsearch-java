@@ -14,6 +14,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
@@ -472,14 +473,22 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, scope, "");
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
-      // TODO: must resolve
-      outputSource(classType, "");
-      outputTarget(classType, "", "");
+      String typeScope = "";
+      try {
+        typeScope = getScopeOfType(classType, classType.resolve());
+      } catch (Exception e) {
+      }
+      outputSource(classType, typeScope);
+      outputTarget(classType, typeScope, "");
     }
     for (ClassOrInterfaceType classType : n.getImplementedTypes()) {
-      // TODO: must resolve
-      outputSource(classType, "");
-      outputTarget(classType, "", "");
+      String typeScope = "";
+      try {
+        typeScope = getScopeOfType(classType, classType.resolve());
+      } catch (Exception e) {
+      }
+      outputSource(classType, typeScope);
+      outputTarget(classType, typeScope, "");
     }
     super.visit(n, a);
   }
@@ -611,16 +620,25 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     // Output parameters
     for (Parameter parameter : n.getParameters()) {
-      final Type type = parameter.getType();
+      // type
       final String typeScope = getScopeOfParameterType(parameter);
+      final Type type = parameter.getType();
       outputSource(type, typeScope);
       outputTarget(type, typeScope, context);
 
+      // variable name
       outputSource(parameter, "");
       outputTarget(parameter, "", context);
     }
 
-    // Output return type
+    // exceptions
+    for (ReferenceType exception : n.getThrownExceptions()) {
+      final String typeScope = getScopeOfType(exception, exception.resolve());
+      outputSource(exception, typeScope);
+      outputTarget(exception, typeScope, context);
+    }
+
+    // return type
     Type type = n.getType();
     final String typeScope = getScopeOfType(type, resolvedType);
     if (typeScope.length() > 0) {
@@ -631,6 +649,22 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     }
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
+
+    super.visit(n, a);
+  }
+
+  @Override
+  public void visit(CatchClause n, String a) {
+    final Parameter parameter = n.getParameter();
+    final String typeScope = getScopeOfParameterType(parameter);
+    final String context = getContext(n);
+    final Type type = parameter.getType();
+    outputSource(type, typeScope);
+    outputTarget(type, typeScope, context);
+
+    // variable name
+    outputSource(parameter, "");
+    outputTarget(parameter, "", context);
 
     super.visit(n, a);
   }
