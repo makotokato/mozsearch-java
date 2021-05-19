@@ -77,6 +77,11 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   }
 
   private String getScopeOfParameterType(final Parameter parameter) {
+    // Resolving type is expensive.
+    if (isLongTask()) {
+      return "";
+    }
+
     try {
       return getScopeOfType(parameter.getType(), parameter.resolve().getType());
     } catch (Exception e) {
@@ -268,12 +273,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputSource(final Parameter n, final String scope) {
+  private void outputSource(final Parameter n) {
+    final Type type = n.getType();
+    final String typeScope = getScopeOfParameterType(n);
+    outputSource(type, typeScope);
+
     final SimpleName name = n.getName();
-    final String fullName = scope + name.getIdentifier();
+    final String fullName = name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
-    obj.addSourceLine(name).addSource(n, name, scope);
+    obj.addSourceLine(name).addSource(n, name, "");
     obj.addSymbol(fullName);
 
     outputJSON(obj);
@@ -435,12 +444,16 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputJSON(obj);
   }
 
-  private void outputTarget(final Parameter n, final String scope, final String context) {
+  private void outputTarget(final Parameter n, final String context) {
+    final Type type = n.getType();
+    final String typeScope = getScopeOfParameterType(n);
+    outputTarget(type, typeScope, context);
+
     final SimpleName name = n.getName();
-    final String fullName = scope + name.getIdentifier();
+    final String fullName = name.getIdentifier();
 
     MozSearchJSONObject obj = new MozSearchJSONObject();
-    obj.addTargetLine(name).addTarget(n, name, scope, context);
+    obj.addTargetLine(name).addTarget(n, name, "", context);
     obj.addSymbol(fullName);
 
     outputJSON(obj);
@@ -580,13 +593,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, scope, context);
 
     for (Parameter parameter : n.getParameters()) {
-      final Type type = parameter.getType();
-      final String typeScope = getScopeOfParameterType(parameter);
-      outputSource(type, typeScope);
-      outputTarget(type, typeScope, context);
-
-      outputSource(parameter, "");
-      outputTarget(parameter, "", context);
+      outputSource(parameter);
+      outputTarget(parameter, context);
     }
 
     super.visit(n, a);
@@ -620,15 +628,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     // Output parameters
     for (Parameter parameter : n.getParameters()) {
-      // type
-      final String typeScope = getScopeOfParameterType(parameter);
-      final Type type = parameter.getType();
-      outputSource(type, typeScope);
-      outputTarget(type, typeScope, context);
-
-      // variable name
-      outputSource(parameter, "");
-      outputTarget(parameter, "", context);
+      outputSource(parameter);
+      outputTarget(parameter, context);
     }
 
     // exceptions
@@ -656,15 +657,10 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(CatchClause n, String a) {
     final Parameter parameter = n.getParameter();
-    final String typeScope = getScopeOfParameterType(parameter);
     final String context = getContext(n);
-    final Type type = parameter.getType();
-    outputSource(type, typeScope);
-    outputTarget(type, typeScope, context);
 
-    // variable name
-    outputSource(parameter, "");
-    outputTarget(parameter, "", context);
+    outputSource(parameter);
+    outputTarget(parameter, context);
 
     super.visit(n, a);
   }
@@ -759,10 +755,10 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
   @Override
   public void visit(CastExpr n, String a) {
-    final String context = getContext(n);
     Type type = n.getType();
     String scope = "";
 
+    // Resolving type is expensive
     if (!isLongTask()) {
       try {
         scope = getScopeOfType(type, type.resolve());
@@ -776,6 +772,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
         // not resolved
       }
     }
+
+    final String context = getContext(n);
 
     outputSource(type, scope);
     outputTarget(type, scope, context);
