@@ -7,8 +7,7 @@ java -jar mozsearch-java-all.jar <source code path> <output JSON path>
 
 ## Build with gradle
 ```
-./gradlew build
-./gradlew fatJar
+./gradlew assemble
 ```
 
 ## Build with bazel
