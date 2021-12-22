@@ -14,8 +14,8 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
-        "com.github.javaparser:javaparser-core:3.20.2",
-        "com.github.javaparser:javaparser-symbol-solver-core:3.20.2",
+        "com.github.javaparser:javaparser-core:3.23.1",
+        "com.github.javaparser:javaparser-symbol-solver-core:3.23.1",
         "org.json:json:20190722",
         "junit:junit:3.8.1",
     ],
