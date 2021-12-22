@@ -172,7 +172,7 @@ public class JavaIndexer {
       try {
         makeIndex(file, output);
       } catch (Exception exception) {
-        System.err.println(exception);
+        exception.printStackTrace();
         try {
           Files.delete(output);
         } catch (IOException ioexception) {
