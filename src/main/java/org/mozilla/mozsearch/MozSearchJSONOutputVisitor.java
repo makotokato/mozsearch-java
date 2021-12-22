@@ -636,9 +636,9 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     for (ReferenceType exception : n.getThrownExceptions()) {
       String typeScope = "";
       try {
-          typeScope = getScopeOfType(exception, exception.resolve());
+        typeScope = getScopeOfType(exception, exception.resolve());
       } catch (Exception e) {
-          // not resolved
+        // not resolved
       }
       outputSource(exception, typeScope);
       outputTarget(exception, typeScope, context);
