@@ -11,19 +11,19 @@
 {"loc":"8:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"8:21","pretty":"main","kind":"def","sym":"main","context":"InnerClass","target":1}
 {"loc":"8:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
-{"loc":"8:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"InnerClass","target":1}
 {"no_crossref":1,"loc":"8:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
+{"loc":"8:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"InnerClass","target":1}
 {"loc":"8:35","pretty":"args","kind":"def","sym":"args","context":"InnerClass","target":1}
 {"no_crossref":1,"loc":"9:15-20","pretty":"variable first","sym":"first","syntax":"use,variable","source":1}
-{"loc":"9:15","pretty":"first","kind":"def","sym":"first","context":"","target":1}
+{"loc":"9:15","pretty":"first","kind":"def","sym":"first","context":"InnerClass.main","target":1}
 {"loc":"9:4-14","pretty":"class InnerClass","sym":"InnerClass","syntax":"type,use","source":1}
-{"loc":"9:4","pretty":"InnerClass","kind":"use","sym":"InnerClass","context":"","target":1}
+{"loc":"9:4","pretty":"InnerClass","kind":"use","sym":"InnerClass","context":"InnerClass.main","target":1}
 {"loc":"9:27-37","pretty":"constructor InnerClass.InnerClass","sym":"InnerClass#InnerClass","syntax":"use,function","source":1}
 {"loc":"9:27","pretty":"InnerClass.InnerClass","kind":"use","sym":"InnerClass#InnerClass","context":"InnerClass.main","target":1}
 {"no_crossref":1,"loc":"10:21-22","pretty":"variable v","sym":"v","syntax":"use,variable","source":1}
-{"loc":"10:21","pretty":"v","kind":"def","sym":"v","context":"","target":1}
+{"loc":"10:21","pretty":"v","kind":"def","sym":"v","context":"InnerClass.main","target":1}
 {"loc":"10:15-20","pretty":"class InnerClass.First","sym":"InnerClass#First","syntax":"type,use","source":1}
-{"loc":"10:15","pretty":"InnerClass.First","kind":"use","sym":"InnerClass#First","context":"","target":1}
+{"loc":"10:15","pretty":"InnerClass.First","kind":"use","sym":"InnerClass#First","context":"InnerClass.main","target":1}
 {"loc":"10:35-40","pretty":"constructor InnerClass.First.First","sym":"InnerClass#First#First","syntax":"use,function","source":1}
 {"loc":"10:35","pretty":"InnerClass.First.First","kind":"use","sym":"InnerClass#First#First","context":"InnerClass.main","target":1}
 {"no_crossref":1,"loc":"10:25-30","pretty":"variable first","sym":"first","syntax":"uselocal,variable","source":1}

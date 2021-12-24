@@ -5,13 +5,13 @@
 {"loc":"5:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"5:21","pretty":"main","kind":"def","sym":"main","context":"Generics","target":1}
 {"loc":"5:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
-{"loc":"5:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics","target":1}
 {"no_crossref":1,"loc":"5:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
+{"loc":"5:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics","target":1}
 {"loc":"5:35","pretty":"args","kind":"def","sym":"args","context":"Generics","target":1}
 {"no_crossref":1,"loc":"6:17-21","pretty":"variable list","sym":"list","syntax":"use,variable","source":1}
-{"loc":"6:17","pretty":"list","kind":"def","sym":"list","context":"","target":1}
+{"loc":"6:17","pretty":"list","kind":"def","sym":"list","context":"Generics.main","target":1}
 {"loc":"6:4-8","pretty":"class java.util.List","sym":"java#util#List","syntax":"type,use","source":1}
-{"loc":"6:4","pretty":"java.util.List","kind":"use","sym":"java#util#List","context":"","target":1}
+{"loc":"6:4","pretty":"java.util.List","kind":"use","sym":"java#util#List","context":"Generics.main","target":1}
 {"loc":"6:28-37","pretty":"constructor java.util.ArrayList.ArrayList","sym":"java#util#ArrayList#ArrayList","syntax":"use,function","source":1}
 {"loc":"6:28","pretty":"java.util.ArrayList.ArrayList","kind":"use","sym":"java#util#ArrayList#ArrayList","context":"Generics.main","target":1}
 {"loc":"7:9-12","pretty":"method java.util.List.add","sym":"java#util#List#add","syntax":"use,function","source":1}
@@ -29,6 +29,6 @@
 {"no_crossref":1,"loc":"9:23-27","pretty":"variable list","sym":"list","syntax":"uselocal,variable","source":1}
 {"loc":"9:23","pretty":"list","kind":"use","sym":"list","context":"Generics.main","target":1}
 {"no_crossref":1,"loc":"9:16-20","pretty":"variable item","sym":"item","syntax":"use,variable","source":1}
-{"loc":"9:16","pretty":"item","kind":"def","sym":"item","context":"","target":1}
+{"loc":"9:16","pretty":"item","kind":"def","sym":"item","context":"Generics.main","target":1}
 {"loc":"9:9-15","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
-{"loc":"9:9","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"","target":1}
+{"loc":"9:9","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics.main","target":1}

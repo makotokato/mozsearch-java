@@ -521,6 +521,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
           final ResolvedTypeDeclaration typeDecl = decl.asField().declaringType();
           scope = typeDecl.getQualifiedName() + ".";
           context = typeDecl.getQualifiedName();
+        } else {
+          context =  getContext(n);
         }
         resolvedType = decl.getType();
       } catch (Exception e) {
@@ -591,6 +593,11 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     outputSource(n, scope);
     outputTarget(n, scope, context);
+    // output constructor name only too
+    if (scope.length() > 0) {
+      outputSource(n, "");
+      outputTarget(n, "", context);
+    }
 
     for (Parameter parameter : n.getParameters()) {
       outputSource(parameter);
