@@ -45,5 +45,10 @@ public class IndexingTest extends TestCase {
     f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/EnumClass.java.out"));
     assertTrue(f1.length == f2.length);
     Files.delete(Paths.get("/tmp/EnumClass.java"));
+
+    f1 = Files.readAllBytes(Paths.get("/tmp/ExceptionTest.java"));
+    f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/ExceptionTest.java.out"));
+    assertTrue(f1.length == f2.length);
+    Files.delete(Paths.get("/tmp/ExceptionTest.java"));
   }
 }
