@@ -522,7 +522,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
           scope = typeDecl.getQualifiedName() + ".";
           context = typeDecl.getQualifiedName();
         } else {
-          context =  getContext(n);
+          context = getContext(n);
         }
         resolvedType = decl.getType();
       } catch (Exception e) {
