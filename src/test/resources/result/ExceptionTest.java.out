@@ -1,5 +1,5 @@
 {"loc":"3:13-26","pretty":"class ExceptionTest","sym":"ExceptionTest","syntax":"def,type","source":1}
-{"loc":"3:13","pretty":"ExceptionTest","kind":"def","sym":"ExceptionTest","target":1}
+{"loc":"3:13","pretty":"ExceptionTest","kind":"def","sym":"ExceptionTest","context":"","target":1}
 {"loc":"4:21-25","pretty":"method ExceptionTest.main","sym":"ExceptionTest#main","syntax":"def,function","source":1}
 {"loc":"4:21","pretty":"ExceptionTest.main","kind":"def","sym":"ExceptionTest#main","context":"ExceptionTest","target":1}
 {"loc":"4:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
@@ -12,5 +12,5 @@
 {"no_crossref":1,"loc":"7:31-40","pretty":"parameter exception","sym":"exception","syntax":"use,variable","source":1}
 {"loc":"7:19","pretty":"IOException","kind":"use","sym":"IOException","context":"ExceptionTest.main","target":1}
 {"loc":"7:31","pretty":"exception","kind":"def","sym":"exception","context":"ExceptionTest.main","target":1}
-{"loc":"6:18-29","pretty":"constructor java.io.IOException.IOException","sym":"java#io#IOException#IOException","syntax":"use,function","source":1}
-{"loc":"6:18","pretty":"java.io.IOException.IOException","kind":"use","sym":"java#io#IOException#IOException","context":"ExceptionTest.main","target":1}
+{"loc":"6:16-27","pretty":"constructor java.io.IOException.IOException","sym":"java#io#IOException#IOException","syntax":"use,function","source":1}
+{"loc":"6:16","pretty":"java.io.IOException.IOException","kind":"use","sym":"java#io#IOException#IOException","context":"ExceptionTest.main","target":1}

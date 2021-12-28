@@ -1,5 +1,5 @@
 {"loc":"4:13-21","pretty":"class Generics","sym":"Generics","syntax":"def,type","source":1}
-{"loc":"4:13","pretty":"Generics","kind":"def","sym":"Generics","target":1}
+{"loc":"4:13","pretty":"Generics","kind":"def","sym":"Generics","context":"","target":1}
 {"loc":"5:21-25","pretty":"method Generics.main","sym":"Generics#main","syntax":"def,function","source":1}
 {"loc":"5:21","pretty":"Generics.main","kind":"def","sym":"Generics#main","context":"Generics","target":1}
 {"loc":"5:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}

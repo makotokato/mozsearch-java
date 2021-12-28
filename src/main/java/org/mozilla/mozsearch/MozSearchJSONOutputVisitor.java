@@ -475,15 +475,20 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
   @Override
   public void visit(ClassOrInterfaceDeclaration n, String a) {
     String scope = "";
+    String context = "";
 
     try {
       final ResolvedReferenceTypeDeclaration decl = n.resolve();
       scope = getScope(decl.getQualifiedName(), n.getName());
+      if (scope.length() > 0) {
+        context = scope.substring(0, scope.length() - 1);
+      }
     } catch (Exception e) {
+      // not resolved
     }
 
     outputSource(n, scope);
-    outputTarget(n, scope, "");
+    outputTarget(n, scope, context);
 
     for (ClassOrInterfaceType classType : n.getExtendedTypes()) {
       String typeScope = "";
@@ -492,7 +497,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       } catch (Exception e) {
       }
       outputSource(classType, typeScope);
-      outputTarget(classType, typeScope, "");
+      outputTarget(classType, typeScope, context);
     }
     for (ClassOrInterfaceType classType : n.getImplementedTypes()) {
       String typeScope = "";
@@ -501,7 +506,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       } catch (Exception e) {
       }
       outputSource(classType, typeScope);
-      outputTarget(classType, typeScope, "");
+      outputTarget(classType, typeScope, context);
     }
     super.visit(n, a);
   }

@@ -125,7 +125,7 @@ public class MozSearchJSONObject extends JSONObject {
       final SimpleName name,
       final String scope,
       final String context) {
-    return put("kind", "def").put("pretty", scope + name.getIdentifier());
+    return put("kind", "def").put("pretty", scope + name.getIdentifier()).put("context", context);
   }
 
   public JSONObject addTarget(

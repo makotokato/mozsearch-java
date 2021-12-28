@@ -1,5 +1,5 @@
 {"loc":"1:13-22","pretty":"class EnumClass","sym":"EnumClass","syntax":"def,type","source":1}
-{"loc":"1:13","pretty":"EnumClass","kind":"def","sym":"EnumClass","target":1}
+{"loc":"1:13","pretty":"EnumClass","kind":"def","sym":"EnumClass","context":"","target":1}
 {"loc":"2:7-15","pretty":"enum EnumClass.PRIORITY","sym":"EnumClass#PRIORITY","syntax":"def,variable","source":1}
 {"loc":"2:7","pretty":"EnumClass.PRIORITY","kind":"def","sym":"EnumClass#PRIORITY","context":"EnumClass","target":1}
 {"loc":"3:4-7","pretty":"enum constant EnumClass.PRIORITY.LOW","sym":"EnumClass#PRIORITY#LOW","syntax":"def,variable","source":1}
@@ -23,6 +23,6 @@
 {"loc":"12:21-25","pretty":"method main","sym":"main","syntax":"def,function","source":1}
 {"loc":"12:21","pretty":"main","kind":"def","sym":"main","context":"EnumClass","target":1}
 {"loc":"12:26-32","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
-{"loc":"12:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"EnumClass","target":1}
 {"no_crossref":1,"loc":"12:35-39","pretty":"parameter args","sym":"args","syntax":"use,variable","source":1}
+{"loc":"12:26","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"EnumClass","target":1}
 {"loc":"12:35","pretty":"args","kind":"def","sym":"args","context":"EnumClass","target":1}
