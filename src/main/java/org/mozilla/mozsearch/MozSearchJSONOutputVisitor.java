@@ -148,6 +148,35 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     return "";
   }
 
+  private void handleGenericsArguments(final Type type, final String context) {
+    if (!type.isClassOrInterfaceType()) {
+      return;
+    }
+
+    Optional<NodeList<Type>> args = type.asClassOrInterfaceType().getTypeArguments();
+    if (!args.isPresent()) {
+      return;
+    }
+
+    for (Type t : args.get()) {
+      String typeScope = "";
+      if (!isLongTask()) {
+        try {
+          final ResolvedType resolvedType = t.resolve();
+          typeScope = getScopeOfType(t, resolvedType);
+          if (typeScope.length() > 0) {
+            t = getRealType(t);
+          }
+        } catch (Exception e) {
+        }
+      }
+      outputSource(t, typeScope);
+      outputTarget(t, typeScope, context);
+    }
+  }
+
+  // Emit objects functions
+
   private void outputJSON(final JSONObject obj) {
     try {
       if (!Files.exists(mOutputPath.getParent())) {
@@ -555,26 +584,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
 
-    if (type.isClassOrInterfaceType()) {
-      Optional<NodeList<Type>> args = type.asClassOrInterfaceType().getTypeArguments();
-      if (args.isPresent()) {
-        for (Type t : args.get()) {
-          typeScope = "";
-          if (!isLongTask()) {
-            try {
-              resolvedType = t.resolve();
-              typeScope = getScopeOfType(t, resolvedType);
-              if (typeScope.length() > 0) {
-                t = getRealType(t);
-              }
-            } catch (Exception e) {
-            }
-          }
-          outputSource(t, typeScope);
-          outputTarget(t, typeScope, context);
-        }
-      }
-    }
+    handleGenericsArguments(type, context);
 
     super.visit(n, a);
   }
@@ -692,6 +702,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
 
+    handleGenericsArguments(type, context);
+
     super.visit(n, a);
   }
 
@@ -768,6 +780,8 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
 
     outputSource(n, n.getType().getName(), scope);
     outputTarget(n, n.getType().getName(), scope, context);
+
+    handleGenericsArguments(n.getType(), context);
 
     super.visit(n, a);
   }

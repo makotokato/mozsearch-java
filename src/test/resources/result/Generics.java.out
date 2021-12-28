@@ -16,6 +16,8 @@
 {"loc":"6:9","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics.main","target":1}
 {"loc":"6:28-37","pretty":"constructor java.util.ArrayList.ArrayList","sym":"java#util#ArrayList#ArrayList","syntax":"use,function","source":1}
 {"loc":"6:28","pretty":"java.util.ArrayList.ArrayList","kind":"use","sym":"java#util#ArrayList#ArrayList","context":"Generics.main","target":1}
+{"loc":"6:38-44","pretty":"class java.lang.String","sym":"java#lang#String","syntax":"type,use","source":1}
+{"loc":"6:38","pretty":"java.lang.String","kind":"use","sym":"java#lang#String","context":"Generics.main","target":1}
 {"loc":"7:9-12","pretty":"method java.util.List.add","sym":"java#util#List#add","syntax":"use,function","source":1}
 {"loc":"7:9","pretty":"java.util.List.add","kind":"use","sym":"java#util#List#add","context":"Generics.main","target":1}
 {"no_crossref":1,"loc":"7:4-8","pretty":"variable list","sym":"list","syntax":"uselocal,variable","source":1}
