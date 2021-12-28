@@ -1,6 +1,7 @@
 package org.mozilla.mozsearch;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -116,6 +117,14 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       realType = realType.asArrayType().getComponentType();
     }
     return realType;
+  }
+
+  private Type getRealType(final Type type) {
+    Type realType = getClassOrInterfaceType(type);
+    if (realType != null) {
+      return realType;
+    }
+    return type;
   }
 
   private static String getContext(final Node n) {
@@ -539,15 +548,33 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     outputTarget(n, scope, context);
 
     Type type = n.getType();
-    final String typeScope = getScopeOfType(type, resolvedType);
+    String typeScope = getScopeOfType(type, resolvedType);
     if (typeScope.length() > 0) {
-      Type realType = getClassOrInterfaceType(type);
-      if (realType != null) {
-        type = realType;
-      }
+      type = getRealType(type);
     }
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
+
+    if (type.isClassOrInterfaceType()) {
+      Optional<NodeList<Type>> args = type.asClassOrInterfaceType().getTypeArguments();
+      if (args.isPresent()) {
+        for (Type t : args.get()) {
+          typeScope = "";
+          if (!isLongTask()) {
+            try {
+              resolvedType = t.resolve();
+              typeScope = getScopeOfType(t, resolvedType);
+              if (typeScope.length() > 0) {
+                t = getRealType(t);
+              }
+            } catch (Exception e) {
+            }
+          }
+          outputSource(t, typeScope);
+          outputTarget(t, typeScope, context);
+        }
+      }
+    }
 
     super.visit(n, a);
   }
@@ -660,10 +687,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
     Type type = n.getType();
     final String typeScope = getScopeOfType(type, resolvedType);
     if (typeScope.length() > 0) {
-      Type realType = getClassOrInterfaceType(type);
-      if (realType != null) {
-        type = realType;
-      }
+      type = getRealType(type);
     }
     outputSource(type, typeScope);
     outputTarget(type, typeScope, context);
@@ -780,10 +804,7 @@ public class MozSearchJSONOutputVisitor extends VoidVisitorAdapter<String> {
       try {
         scope = getScopeOfType(type, type.resolve());
         if (scope.length() > 0) {
-          final Type realType = getClassOrInterfaceType(type);
-          if (realType != null) {
-            type = realType;
-          }
+          type = getRealType(type);
         }
       } catch (Exception e) {
         // not resolved
