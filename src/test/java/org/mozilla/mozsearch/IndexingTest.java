@@ -23,8 +23,8 @@ public class IndexingTest extends TestCase {
   }
 
   public void testIndexing() throws IOException {
-    JavaIndexer indexer =
-        new JavaIndexer(Paths.get("./src/test/resources/data"), Paths.get("/tmp"));
+    MozSearchJavaIndexer indexer =
+        new MozSearchJavaIndexer(Paths.get("./src/test/resources/data"), Paths.get("/tmp"));
     indexer.outputIndexes();
     byte[] f1 = Files.readAllBytes(Paths.get("/tmp/HelloWorld.java"));
     byte[] f2 = Files.readAllBytes(Paths.get("./src/test/resources/result/HelloWorld.java.out"));
