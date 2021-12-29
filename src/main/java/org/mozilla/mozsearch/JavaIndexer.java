@@ -3,7 +3,6 @@ package org.mozilla.mozsearch;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
@@ -15,9 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class JavaIndexer {
@@ -61,23 +57,22 @@ public class JavaIndexer {
     makeIndexes(javaFiles, srcDir, outputDir);
   }
 
-  private static Path getImportJavaFile(
-      final Path file, final String importName, final String packageName) {
-    if (importName.startsWith("java.")) {
-      return null;
-    }
-
+  private static Path getRootPath(final Path file, final String packageName) {
     String path = packageName;
-    Path root = file.getParent().getParent();
+    Path root = file.getParent();
+    String leafName = root.getFileName().toString();
+
+    root = root.getParent();
     while (path.contains(".")) {
+      if (!leafName.equals(path.substring(path.lastIndexOf(".") + 1))) {
+        return null;
+      }
+
+      leafName = root.getFileName().toString();
       root = root.getParent();
-      path = path.substring(0, path.lastIndexOf(".") - 1);
+      path = path.substring(0, path.lastIndexOf("."));
     }
-    final Path importFile = Paths.get(root.toString(), importName.replace(".", "/") + ".java");
-    if (Files.exists(importFile)) {
-      return importFile;
-    }
-    return null;
+    return root;
   }
 
   private void makeIndexes(final List<Path> files, final Path srcDir, final Path outputDir) {
@@ -98,20 +93,14 @@ public class JavaIndexer {
         final CompilationUnit unit = StaticJavaParser.parse(file);
         if (unit.getPackageDeclaration().isPresent()) {
           final String packageName = unit.getPackageDeclaration().get().getName().toString();
-          for (ImportDeclaration item : unit.getImports()) {
-            final Path importFile = getImportJavaFile(file, item.getName().toString(), packageName);
-            if (importFile != null) {
-              try {
-                if (!dirs.contains(importFile.getParent())) {
-                  solver.add(new JavaParserTypeSolver(importFile.getParent()));
-                  dirs.add(importFile.getParent());
-                }
-              } catch (Exception exception) {
-              }
-            }
+          final Path rootDir = getRootPath(file, packageName);
+          if (rootDir != null && !dirs.contains(rootDir)) {
+            solver.add(new JavaParserTypeSolver(rootDir));
+            dirs.add(rootDir);
           }
         }
       } catch (Exception exception) {
+        exception.printStackTrace();
       }
 
       if (!dirs.contains(file.getParent())) {
