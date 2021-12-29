@@ -86,7 +86,7 @@ public class MozSearchJavaIndexer {
     // This is cached dir list not to add duplicated entry
     final ArrayList<Path> dirs = new ArrayList<Path>();
 
-    // Add dir from import syntax.
+    // Add root directory from package syntax
     StaticJavaParser.getConfiguration().setSymbolResolver(null);
     for (Path file : files) {
       try {
@@ -113,7 +113,7 @@ public class MozSearchJavaIndexer {
     final String sdkroot = System.getenv("ANDROID_SDK_ROOT");
     if (sdkroot != null && sdkroot.length() > 0) {
       try {
-        final String[] apis = new String[] {"android-30", "android-29", "android-28"};
+        final String[] apis = new String[] {"android-31", "android-30", "android-29", "android-28"};
         for (String api : apis) {
           final Path sdkrootPath = Paths.get(sdkroot, "platforms", api, "android.jar");
           if (Files.exists(sdkrootPath)) {
