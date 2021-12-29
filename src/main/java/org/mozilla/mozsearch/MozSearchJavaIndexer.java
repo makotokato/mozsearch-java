@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JavaIndexer {
+public class MozSearchJavaIndexer {
   private Path mSourceDir;
   private Path mOutputDir;
   private int mTimeout = -1;
   private int mThreadPoolCount = 4;
 
-  public JavaIndexer(final Path sourceDir, final Path outputDir) {
+  public MozSearchJavaIndexer(final Path sourceDir, final Path outputDir) {
     mSourceDir = sourceDir;
     mOutputDir = outputDir;
   }

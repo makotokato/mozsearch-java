@@ -27,7 +27,8 @@ public class JavaAnalyze {
     }
 
     System.out.println("Generating references ...");
-    JavaIndexer indexer = new JavaIndexer(Paths.get(args[n]), Paths.get(args[n + 1]));
+    MozSearchJavaIndexer indexer =
+        new MozSearchJavaIndexer(Paths.get(args[n]), Paths.get(args[n + 1]));
     if (timeout > 0) {
       indexer.setTimeout(timeout);
     }
