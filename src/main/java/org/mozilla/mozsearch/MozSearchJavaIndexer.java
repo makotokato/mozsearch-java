@@ -23,8 +23,8 @@ public class MozSearchJavaIndexer {
   private int mThreadPoolCount = 4;
 
   public MozSearchJavaIndexer(final Path sourceDir, final Path outputDir) {
-    mSourceDir = sourceDir;
-    mOutputDir = outputDir;
+    mSourceDir = sourceDir.toAbsolutePath();
+    mOutputDir = outputDir.toAbsolutePath();
   }
 
   public void setTimeout(int timeout) {
@@ -57,12 +57,15 @@ public class MozSearchJavaIndexer {
     makeIndexes(javaFiles, srcDir, outputDir);
   }
 
-  private static Path getRootPath(final Path file, final String packageName) {
+  private Path getRootPath(final Path file, final String packageName) {
     String path = packageName;
     Path root = file.getParent();
     String leafName = root.getFileName().toString();
-
     root = root.getParent();
+
+    // Find root directory of this Java source package.
+    // If directory structure isn't Java package structure, we don't return
+    // root directory.
     while (path.contains(".")) {
       if (!leafName.equals(path.substring(path.lastIndexOf(".") + 1))) {
         return null;
@@ -71,6 +74,10 @@ public class MozSearchJavaIndexer {
       leafName = root.getFileName().toString();
       root = root.getParent();
       path = path.substring(0, path.lastIndexOf("."));
+    }
+
+    if (!root.startsWith(mSourceDir)) {
+      return null;
     }
     return root;
   }
@@ -128,7 +135,7 @@ public class MozSearchJavaIndexer {
     StaticJavaParser.getConfiguration().setSymbolResolver(new JavaSymbolSolver(solver));
 
     for (Path file : files) {
-      Path output =
+      final Path output =
           Paths.get(
               outputDir.toString(), file.toString().substring(srcDir.toString().length() + 1));
       try {
@@ -152,8 +159,7 @@ public class MozSearchJavaIndexer {
     System.out.println("Processing " + file.toString() + " ");
 
     final CompilationUnit unit = StaticJavaParser.parse(file);
-
-    MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(outputPath);
+    final MozSearchJSONOutputVisitor visitor = new MozSearchJSONOutputVisitor(outputPath);
     if (mTimeout > 0) {
       visitor.setTimeout(mTimeout);
     }
